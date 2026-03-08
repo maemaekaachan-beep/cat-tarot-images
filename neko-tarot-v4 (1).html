@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<!-- v3.0 -->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230D0B2A' rx='20'/><text y='.9em' font-size='80' x='10'>🐾</text></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>ねこタロット 🐾</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: linear-gradient(180deg,#0D0B2A 0%,#130D3A 50%,#0D0B2A 100%); min-height: 100vh; font-family: 'Helvetica Neue', sans-serif; color: #F0EAD6; overflow-x: hidden; }
+    ::-webkit-scrollbar { display: none; }
+    button { outline: none; font-family: inherit; }
+
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+    @keyframes pulseGlow { 0%,100%{box-shadow:0 4px 20px rgba(123,47,190,0.5),0 0 28px rgba(201,168,76,0.18)} 50%{box-shadow:0 4px 30px rgba(123,47,190,0.7),0 0 40px rgba(201,168,76,0.35)} }
+    @keyframes floatCat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+    @keyframes flipIn { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0deg);opacity:1} }
+    @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+    #root { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+    canvas#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+    .screen { position: relative; z-index: 1; padding-bottom: 50px; }
+
+    /* Home */
+    .home-header { padding-top: 44px; text-align: center; margin-bottom: 6px; }
+    .cat-label { color: #C9A84C; font-size: 10px; letter-spacing: 5px; margin-top: 12px; margin-bottom: 4px; opacity: 0.75; font-family: serif; }
+    .home-title { font-size: 26px; font-weight: bold; font-family: serif; margin: 0 0 4px;
+      background: linear-gradient(135deg,#C9A84C,#F0EAD6,#C9A84C);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .home-sub { color: rgba(240,234,214,0.55); font-size: 12px; }
+    .menu-list { width: 100%; max-width: 400px; padding: 0 18px; margin: 18px auto 0; display: flex; flex-direction: column; gap: 10px; }
+    .menu-divider { color: rgba(201,168,76,0.65); font-size: 10px; text-align: center; letter-spacing: 3px; margin-bottom: 14px; }
+    .menu-btn { background: linear-gradient(135deg,rgba(26,16,64,0.85),rgba(13,11,42,0.9));
+      border: 1px solid rgba(201,168,76,0.3); border-radius: 14px; padding: 13px 16px;
+      display: flex; align-items: center; gap: 13px; cursor: pointer; text-align: left;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.4); transition: all 0.2s; width: 100%;
+      -webkit-tap-highlight-color: transparent; }
+    .menu-btn:hover { border-color: rgba(201,168,76,0.65); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(123,47,190,0.3); }
+    .menu-icon-wrap { width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0; font-size: 21px;
+      background: linear-gradient(135deg,rgba(123,47,190,0.35),rgba(201,168,76,0.18));
+      border: 1px solid rgba(201,168,76,0.28); display: flex; align-items: center; justify-content: center; }
+    .menu-title { color: #F0EAD6; font-size: 14px; font-weight: bold; font-family: serif; }
+    .menu-sub { color: rgba(201,168,76,0.65); font-size: 11px; margin-top: 1px; }
+    .menu-arrow { margin-left: auto; color: rgba(201,168,76,0.45); font-size: 18px; }
+
+    /* Fortune topbar */
+    .topbar { display: flex; align-items: center; padding: 14px 18px; gap: 10px; }
+    .back-btn { background: rgba(26,16,64,0.8); border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 10px; color: #C9A84C; padding: 7px 13px; cursor: pointer; font-size: 12px;
+      -webkit-tap-highlight-color: transparent; }
+    .topbar-title { color: #C9A84C; font-family: serif; font-size: 15px; }
+
+    /* Fortune content */
+    .fortune-content { padding: 0 18px 50px; max-width: 440px; margin: 0 auto; }
+
+    /* Intro */
+    .intro-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 20px; animation: fadeInUp 0.45s ease-out; }
+    .intro-box { background: rgba(26,16,64,0.82); border: 1px solid rgba(201,168,76,0.28);
+      border-radius: 16px; padding: 14px 18px; text-align: center; width: 100%; }
+    .intro-cat-label { color: rgba(201,168,76,0.75); font-size: 11px; margin-bottom: 7px; font-family: serif; }
+    .intro-msg { color: #F0EAD6; font-size: 13px; line-height: 1.85; white-space: pre-line; }
+    .start-btn { background: linear-gradient(135deg,#7B2FBE,#C9A84C); border: none; border-radius: 50px;
+      padding: 13px 38px; color: #F0EAD6; font-size: 15px; font-weight: bold; font-family: serif;
+      cursor: pointer; letter-spacing: 2px; animation: pulseGlow 2.2s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent; }
+
+    /* Shuffle */
+    .shuffle-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 60px; gap: 24px; }
+    .shuffle-label { color: #C9A84C; font-size: 13px; letter-spacing: 2px; animation: pulse 0.9s ease-in-out infinite; }
+    .shuffle-cards { position: relative; width: 110px; height: 176px; }
+    .shuffle-card { position: absolute; inset: 0; border-radius: 10px; border: 2px solid #C9A84C;
+      background: linear-gradient(135deg,#1A1040,#0D0B2A); display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s ease; font-size: 28px; opacity: 0.45; }
+
+    /* Flip cards */
+    .flip-hint { color: rgba(201,168,76,0.65); font-size: 11px; text-align: center; margin-bottom: 18px; letter-spacing: 1px; }
+    .flip-cards-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; animation: fadeInUp 0.4s ease-out; }
+    .flip-card-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .flip-label { color: #C9A84C; font-size: 11px; font-weight: bold; letter-spacing: 1px; text-align: center; }
+    .flip-hint-tap { color: rgba(201,168,76,0.55); font-size: 9px; animation: pulse 1.5s ease-in-out infinite; }
+    .card-3d { width: 105px; height: 172px; cursor: pointer; perspective: 600px; }
+    .card-inner { width: 100%; height: 100%; transform-style: preserve-3d; position: relative; transition: transform 0.65s cubic-bezier(0.4,0,0.2,1); }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 11px; border: 2px solid #C9A84C; overflow: hidden; }
+    .card-back { background: linear-gradient(135deg,#0D0B2A 0%,#1A1040 50%,#0D0B2A 100%);
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      box-shadow: 0 0 18px rgba(201,168,76,0.45); }
+    .card-back-inner { position: absolute; inset: 5px; border: 1px solid rgba(201,168,76,0.25); border-radius: 7px; }
+    .card-back-paw { font-size: 34px; color: #C9A84C; opacity: 0.8; }
+    .card-back-text { font-size: 8px; color: #C9A84C; letter-spacing: 2px; opacity: 0.5; margin-top: 4px; }
+    .card-front { transform: rotateY(180deg); background: #0D0B2A; box-shadow: 0 0 24px rgba(201,168,76,0.55); }
+    .card-front img { width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
+    .card-front-placeholder { padding: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+    .card-front-placeholder .pla-icon { font-size: 36px; margin-bottom: 6px; }
+    .card-front-placeholder .pla-name { color: #C9A84C; font-size: 10px; font-family: serif; line-height: 1.4; }
+
+    /* Result */
+    .result-wrap { display: flex; flex-direction: column; gap: 14px; }
+    .result-card { background: linear-gradient(135deg,rgba(26,16,64,0.92),rgba(13,11,42,0.97));
+      border: 1px solid rgba(201,168,76,0.4); border-radius: 16px; padding: 16px;
+      box-shadow: 0 4px 20px rgba(123,47,190,0.2); }
+    .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .result-header-label { color: #C9A84C; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+    .result-img-wrap { display: flex; justify-content: center; margin-bottom: 12px; }
+    .result-img { width: 80px; height: 132px; object-fit: cover; border-radius: 8px; border: 1.5px solid rgba(201,168,76,0.5); box-shadow: 0 0 12px rgba(201,168,76,0.3); }
+    .result-card-name { color: #F0EAD6; font-size: 14px; font-weight: bold; margin-bottom: 8px; font-family: serif; }
+    .result-cat-msg { background: rgba(123,47,190,0.18); border-radius: 10px; padding: 9px 11px;
+      border: 1px solid rgba(123,47,190,0.3); margin-bottom: 8px;
+      color: #C9A84C; font-size: 12px; line-height: 1.7; }
+    .result-meaning { color: rgba(240,234,214,0.75); font-size: 11px; line-height: 1.7; margin-bottom: 8px; }
+    .result-pro { background: rgba(201,168,76,0.08); border-radius: 10px; padding: 9px 11px;
+      border: 1px solid rgba(201,168,76,0.2); color: rgba(240,234,214,0.85); font-size: 11px; line-height: 1.8; font-family: serif; font-style: italic; }
+
+    /* Lucky / Quote */
+    .special-result { text-align: center; padding-top: 10px; animation: fadeInUp 0.45s ease-out; }
+    .special-emoji { font-size: 66px; animation: floatCat 3s ease-in-out infinite; display: inline-block; }
+    .special-label { color: #C9A84C; font-size: 12px; letter-spacing: 2px; margin-top: 8px; font-family: serif; }
+    .special-box { background: linear-gradient(135deg,rgba(26,16,64,0.92),rgba(13,11,42,0.97));
+      border: 2px solid rgba(201,168,76,0.5); border-radius: 18px; padding: 22px 20px;
+      text-align: center; box-shadow: 0 0 28px rgba(201,168,76,0.13); animation: fadeInUp 0.45s ease-out 0.1s both;
+      margin-top: 14px; }
+    .special-type { color: #F0EAD6; font-size: 20px; font-weight: bold; font-family: serif; margin-bottom: 10px; }
+    .special-msg { color: rgba(201,168,76,0.9); font-size: 14px; line-height: 1.85; }
+    .quote-box { position: relative; }
+    .quote-mark { color: rgba(201,168,76,0.25); font-size: 55px; position: absolute; font-family: serif; line-height: 1; }
+    .quote-mark.open { top: 6px; left: 14px; }
+    .quote-mark.close { bottom: -12px; right: 14px; }
+    .quote-text { color: #F0EAD6; font-size: 15px; line-height: 1.95; font-family: serif; position: relative; z-index: 1; padding: 0 18px; }
+
+    /* Buttons */
+    .action-btns { display: flex; gap: 10px; margin-top: 6px; animation: fadeInUp 0.45s ease-out 0.3s both; }
+    .btn-retry { flex: 1; background: rgba(123,47,190,0.28); border: 1px solid rgba(123,47,190,0.5);
+      border-radius: 12px; padding: 11px; color: #C9A84C; font-size: 13px; cursor: pointer; font-family: serif;
+      -webkit-tap-highlight-color: transparent; }
+    .btn-home { flex: 1; background: rgba(201,168,76,0.13); border: 1px solid rgba(201,168,76,0.38);
+      border-radius: 12px; padding: 11px; color: #F0EAD6; font-size: 13px; cursor: pointer; font-family: serif;
+      -webkit-tap-highlight-color: transparent; }
+
+    /* Cat SVG */
+    .cat-svg-wrap { animation: floatCat 3s ease-in-out infinite; display: inline-block; }
+
+    /* Celtic Cross */
+    .celtic-num { color: rgba(201,168,76,0.9); font-size: 9px; font-weight: bold; text-align: center; }
+    .celtic-layout { display: flex; gap: 10px; justify-content: center; align-items: flex-start; }
+    .celtic-cross { display: grid; grid-template-columns: 60px 60px 60px; grid-template-rows: 100px 100px 100px; gap: 4px; }
+    .celtic-staff { display: flex; flex-direction: column; gap: 4px; }
+    .celtic-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .celtic-cross-card { width: 52px; height: 86px; }
+    .celtic-cross-card-rotate { width: 86px; height: 52px; }
+  </style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="root"></div>
+
+<script>
+const TAROT_CARDS = [{"num":"0","name":"愚者","up":{"msg":"自由な心で、新しい世界へ飛び出す時ニャ。","cat":"とりあえず歩き出すニャ。崖？なんとかなるニャ。","pro":"カードは告げています…新たな一歩を恐れず踏み出すとき。純粋な心で未知の世界へ。","img":"https://drive.google.com/uc?export=view&id=1FE9RQkhIi1sYQYKE-X7xL6ZKXJyOglEJ"},"rev":{"msg":"無計画すぎて、危ない目に遭いそうだニャ。","cat":"勢いで飛び出すと、しっぽを踏んづけるニャ。","pro":"カードは告げています…無謀な行動に注意を。立ち止まり、今一度見つめ直して。","img":"https://drive.google.com/uc?export=view&id=1QQkhtz1q6Sw7QX68CeonfIT6lzlgqPr3"}},{"num":"1","name":"魔術師","up":{"msg":"自分の才能を信じて、何かを始めるチャンスニャ。","cat":"準備万端！おもちゃも爪研ぎも完璧。遊ぶニャ！","pro":"カードは告げています…あなたの中に必要なものはすべて揃っています。意志の力を信じて。","img":"https://drive.google.com/uc?export=view&id=1owIKkk1zLXLGGjOLL6EmhegFOwazWvg9"},"rev":{"msg":"やる気はあるけど、空回りして形にならないニャ。","cat":"道具はあるのに、やる気が出ないニャ…。明日ニャ。","pro":"カードは告げています…力を持て余しているかもしれません。本来の目的を見失わないで。","img":"https://drive.google.com/uc?export=view&id=1ehKIJecSS8mg_CMDRn5hg4xT8amp0nym"}},{"num":"2","name":"女教皇","up":{"msg":"静かに自分と向き合い、直感を信じるニャ。","cat":"静かに座って風の匂いを感じるニャ。答えは内側に。","pro":"カードは告げています…内なる声に耳を傾けるとき。直感があなたを導いています。","img":"https://drive.google.com/uc?export=view&id=1tSzEendq_CZfBUn9skSrLYo6uYJAC7Hw"},"rev":{"msg":"心がざわついて、周りの声に振り回されるニャ。","cat":"イライラして毛繕いが進まないニャ。落ち着くニャ。","pro":"カードは告げています…感情を抑え込みすぎています。自分の心と向き合って。","img":"https://drive.google.com/uc?export=view&id=1-HrNhASFIrTb3jdai-WY9YiplvXBeGAn"}},{"num":"3","name":"女帝","up":{"msg":"心も体も満たされて、幸せを実感できるニャ。","cat":"ふかふかのクッション、最高のおやつ。満たされてるニャ。","pro":"カードは告げています…豊かさと愛があなたを包んでいます。安心して受け取って。","img":"https://drive.google.com/uc?export=view&id=1HkCq2NM8SOq-oBphxa5m6Oew19VIa_L5"},"rev":{"msg":"欲張りすぎて、大事なものを見失っているニャ。","cat":"食べ過ぎ、甘えすぎ。お腹がパンパンで動けないニャ。","pro":"カードは告げています…与えすぎて疲れていませんか。まず自分を満たすことが大切です。","img":"https://drive.google.com/uc?export=view&id=12zD-LXkdL1fzSRmd4WT-zXfgoTevhbva"}},{"num":"4","name":"皇帝","up":{"msg":"責任感を持って、自分の居場所を固める時ニャ。","cat":"ここは私のナワバリ。誰も通さないニャ！（キリッ）","pro":"カードは告げています…今こそ意志を持って行動するとき。確かな基盤があなたを支えます。","img":"https://drive.google.com/uc?export=view&id=16e_Fmo16uJMKO7sI5AHdXMrVGUpDcUv1"},"rev":{"msg":"自分の考えを押し付けて、孤立してしまいそうだニャ。","cat":"威張るだけで誰もついてこないニャ。寂しいニャ。","pro":"カードは告げています…支配や固執が見えます。柔軟さを持つことで道が開けます。","img":"https://drive.google.com/uc?export=view&id=1W9dKu9eMCYi7tFHKgpCc-7NMXL2LY91G"}},{"num":"5","name":"法王","up":{"msg":"ルールや伝統を大切にして、周りと調和するニャ。","cat":"先輩猫の言うことは聞くもんだニャ。ルールは大事ニャ。","pro":"カードは告げています…伝統や信念があなたを支えています。信頼できる人に相談して。","img":"https://drive.google.com/uc?export=view&id=15q1KD3DYi7bk4ElXcAc9GsZIUuv-3WPS"},"rev":{"msg":"形にこだわりすぎて、自由がなくなっているニャ。","cat":"その教えは古いニャ！私は私、勝手にさせてもらうニャ。","pro":"カードは告げています…既存のルールに縛られすぎています。自分の価値観を信じて。","img":"https://drive.google.com/uc?export=view&id=1b7iEtwtPdIAhthkzDqJmsH9WNTUB40HA"}},{"num":"6","name":"恋人たち","up":{"msg":"ワクワクするような選択や、嬉しい出会いがあるニャ。","cat":"相性バッチリの相棒に出会えたニャ。ハッピーニャ！","pro":"カードは告げています…大切な選択のとき。心が求めるものに正直に向き合って。","img":"https://drive.google.com/uc?export=view&id=1Dbw-_5rfI-XM_p1dx_s-XU2PzFGdjuPu"},"rev":{"msg":"迷いが生じて、正しい判断ができなくなっているニャ。","cat":"どっちのおやつにするか迷って、結局逃したニャ。","pro":"カードは告げています…迷いや葛藤が生じています。自分の本音と向き合う時間を。","img":"https://drive.google.com/uc?export=view&id=1jSdAjxuyrSFjNwpQAg5QavO2b1whByCp"}},{"num":"7","name":"戦車","up":{"msg":"強い意志を持って、目標に向かって突き進むニャ。","cat":"狙った獲物は逃さないニャ！猛ダッシュだニャ！","pro":"カードは告げています…意志と行動で前進するとき。ブレない心が勝利を引き寄せます。","img":"https://drive.google.com/uc?export=view&id=1A8nKfPBV2vCu50s3FXQKqEzq9zUNOq7E"},"rev":{"msg":"感情を制御できずに、暴走してしまいそうだニャ。","cat":"勢いがつきすぎて壁に激突。制御不能だニャ…。","pro":"カードは告げています…力任せに進んでいませんか。方向性を見直す必要があります。","img":"https://drive.google.com/uc?export=view&id=1tzyUCn-k7nYr58CRk-ZBD5POxJqtHfZ3"}},{"num":"8","name":"力","up":{"msg":"粘り強く取り組むことで、困難を乗り越えるニャ。","cat":"猛獣だって優しくなでればゴロゴロ言うニャ。愛だニャ。","pro":"カードは告げています…内なる強さがあなたの中に宿っています。優しさこそが本当の力。","img":"https://drive.google.com/uc?export=view&id=1KbwcOlTsHuVNkX4pxsrG2Lg9Om4P2rOh"},"rev":{"msg":"自信が持てなくて、すぐに諦めたくなっているニャ。","cat":"噛んじゃダメなところで、ガブッとやっちゃったニャ。","pro":"カードは告げています…自信を失っているかもしれません。自分の強さを思い出して。","img":"https://drive.google.com/uc?export=view&id=1hbnMABLdymrg71PaRBUJ4aESXlJ26cXM"}},{"num":"9","name":"隠者","up":{"msg":"一人の時間を大切にして、深い知恵を得るニャ。","cat":"押し入れの隅っこで、人生について深く考えるニャ…。","pro":"カードは告げています…一人静かに内省するとき。あなたの内側に答えがあります。","img":"https://drive.google.com/uc?export=view&id=1ks6oO3slNn8a6ChA3haKpG3UeycgF04w"},"rev":{"msg":"自分の殻に閉じこもりすぎて、孤独を感じるニャ。","cat":"閉じこもりすぎニャ。たまにはお日様に当たるニャ。","pro":"カードは告げています…孤独に閉じこもりすぎています。外の世界とつながることも大切。","img":"https://drive.google.com/uc?export=view&id=11kjNfniqjOrNnNTGGiUbvZH-K3K6Httn"}},{"num":"10","name":"運命の輪","up":{"msg":"大きなチャンスが巡ってきて、運命が変わるニャ。","cat":"きたニャ！おやつタイムの予感。チャンスを掴むニャ！","pro":"カードは告げています…流れが変わるとき。変化を恐れず、宇宙の流れに身を委ねて。","img":"https://drive.google.com/uc?export=view&id=1MCFfl4GXphzpLo0H_lzhUR3ODMbOt2S7"},"rev":{"msg":"タイミングが合わずに、チャンスを逃してしまうニャ。","cat":"タイミングが悪いニャ。お皿が空っぽだニャ…。","pro":"カードは告げています…流れに逆らっているかもしれません。焦らず波が変わるのを待って。","img":"https://drive.google.com/uc?export=view&id=1PeLj6_NH-gF-G9c1BTzHDYg_hYItZcqj"}},{"num":"11","name":"正義","up":{"msg":"偏見を持たず、正しい判断を下すべき時ニャ。","cat":"悪いことをしたら、猫パンチ。バランスが大事ニャ。","pro":"カードは告げています…真実と公平さがあなたを導きます。誠実であることが最善の道。","img":"https://drive.google.com/uc?export=view&id=1ZLYZw3Q7Hx4f3zbgsJVhrf5doJLr7pDF"},"rev":{"msg":"不当な扱いを受けたり、バランスを崩したりするニャ。","cat":"どっちも悪くないけど、なんだかモヤモヤするニャ。","pro":"カードは告げています…不公平さや偏りを感じているなら、バランスを取り戻す時です。","img":"https://drive.google.com/uc?export=view&id=1pHE6_cjcar0Rj0HuYSAn4wteyjSpLtj-"}},{"num":"12","name":"吊された男","up":{"msg":"苦労はあるけれど、精神的な成長が得られる時ニャ。","cat":"逆さまでも景色は楽しいニャ。今は動かず待つ時ニャ。","pro":"カードは告げています…今は動かず待つとき。違う角度から物事を見ることで気づきが生まれます。","img":"https://drive.google.com/uc?export=view&id=1ryDnsQ9mx0Mo8vVHe_wXSxDHWYs0lFSr"},"rev":{"msg":"努力が報われず、ただ疲弊してしまっているニャ。","cat":"我慢の限界ニャ。ジタバタしても疲れるだけだニャ。","pro":"カードは告げています…犠牲に意味を見出せていません。執着を手放すことで光が見えます。","img":"https://drive.google.com/uc?export=view&id=153PjZal8ASIMpMtgywfLj0ZjcE6zXrd3"}},{"num":"13","name":"死神","up":{"msg":"古い自分を脱ぎ捨てて、新しく生まれ変わるニャ。","cat":"壊れたおもちゃとはおさらば。新しい遊びを見つけるニャ。","pro":"カードは告げています…終わりは新しい始まりの予兆。変容を受け入れることで魂が成長します。","img":"https://drive.google.com/uc?export=view&id=1Ewbvu9e0__0KGMFjtJNcIRMdZSJM_aS5"},"rev":{"msg":"変化を恐れて、終わったことにしがみついているニャ。","cat":"昔のカリカリの方がよかった…なんて、未練だニャ。","pro":"カードは告げています…変化への抵抗が停滞を生んでいます。手放す勇気を持って。","img":"https://drive.google.com/uc?export=view&id=1cag_Ux92xNEsEq88I9yy4mHtGgL2k2P9"}},{"num":"14","name":"節制","up":{"msg":"状況に合わせて、うまくバランスを取っていくニャ。","cat":"水とおやつ、ちょうどいい塩梅で混ぜるニャ。","pro":"カードは告げています…バランスと調和が鍵です。焦らずゆっくりと進むことで道が開けます。","img":"https://drive.google.com/uc?export=view&id=1D7IZFhM6hle2hRCG1GDTMkjspVkOzVPr"},"rev":{"msg":"余裕がなくなって、生活が乱れてしまいそうだニャ。","cat":"混ぜすぎて、なんだかよくわからない味になったニャ。","pro":"カードは告げています…バランスが崩れています。一つのことに偏りすぎていないか見直して。","img":"https://drive.google.com/uc?export=view&id=1eGIu8RQZRQ79Yb2MaSHg0D1msaeJ4z21"}},{"num":"15","name":"悪魔","up":{"msg":"目先の誘惑に負けて、不自由を感じているニャ。","cat":"マタタビの誘惑には勝てないニャ…。やめられないニャ。","pro":"カードは告げています…何かに縛られていると感じていませんか。その鎖はあなたが外せます。","img":"https://drive.google.com/uc?export=view&id=167F4a7badEbfcUkUYjGR6EBo5ffD35-m"},"rev":{"msg":"悪い縁や習慣から、ようやく抜け出せる時ニャ。","cat":"悪い習慣に縛られてるニャ。そろそろ爪を切るニャ。","pro":"カードは告げています…執着や恐れから解放されつつあります。自由への一歩を踏み出して。","img":"https://drive.google.com/uc?export=view&id=1Zq4850lBohM9HEDVqVrCzx28jDCrp6XX"}},{"num":"16","name":"塔","up":{"msg":"突然の出来事に驚くけれど、それが転機になるニャ。","cat":"キャットタワーが崩壊！でも、また立て直せばいいニャ。","pro":"カードは告げています…突然の変化が訪れるかもしれません。崩れるものは本来不要なもの。","img":"https://drive.google.com/uc?export=view&id=1hdWsj9wuRJDc6yet9WHA9HaJx2kmL_9G"},"rev":{"msg":"ショックなことがあっても、被害は最小限で済むニャ。","cat":"突然の変化にパニックニャ！対処すれば大丈夫。","pro":"カードは告げています…最悪の事態は回避できます。今のうちに備えておいて。","img":"https://drive.google.com/uc?export=view&id=1Bw8gQ2V6FQRs4BxRK9wXcjbJbdR5gzq6"}},{"num":"17","name":"星","up":{"msg":"明るい希望が見えてきて、心が癒やされるニャ。","cat":"明るい未来へ向かって、お星様に祈るニャ。","pro":"カードは告げています…希望の光があなたを照らしています。宇宙はあなたを見守っています。","img":"https://drive.google.com/uc?export=view&id=1-sgvuK_WQlavSePBL6m1enxYQAUwe84-"},"rev":{"msg":"理想が高すぎて、現実が見えなくなっているニャ。","cat":"理想が高すぎて、お空の星には手が届かないニャ…。","pro":"カードは告げています…希望を見失っていませんか。小さな光を探すことから始めて。","img":"https://drive.google.com/uc?export=view&id=1jAHNB6EwRHx7tlJB3Da7N2T7OVRxw0rq"}},{"num":"18","name":"月","up":{"msg":"先が見えなくて不安だけど、直感を信じて進むニャ。","cat":"夜の庭は何かが潜んでる予感。ザワザワするニャ…。","pro":"カードは告げています…見えない不安が心を曇らせています。直感を信じ、恐れに向き合って。","img":"https://drive.google.com/uc?export=view&id=1w9f_82N5JGtllm1FkzZVBw-agx74z9OE"},"rev":{"msg":"不安の正体がわかって、少しずつ安心できるニャ。","cat":"幽霊だと思ったら、ただの影だったニャ。安心するニャ。","pro":"カードは告げています…混乱が晴れてきます。隠れていたものが明らかになるでしょう。","img":"https://drive.google.com/uc?export=view&id=17xGYbmX_BwO-qoic0S4VO7bs4SzrjSiC"}},{"num":"19","name":"太陽","up":{"msg":"すべてが明るく照らされて、大成功を収めるニャ。","cat":"お日様ぽかぽか。生きてるだけで丸儲けニャ！","pro":"カードは告げています…明るい光があなたを包んでいます。喜びと成功があなたのもとへ。","img":"https://drive.google.com/uc?export=view&id=1m2bqJ5bxiXHwsI2RsWtvvQoho5767P_b"},"rev":{"msg":"一時的な落ち込みはあるけど、希望は消えていないニャ。","cat":"暑すぎてとろけちゃうニャ。日陰を探すニャ。","pro":"カードは告げています…喜びが半減しているかもしれません。もう少しで光が戻ってきます。","img":"https://drive.google.com/uc?export=view&id=1HeFNvQgb8AkUyJCkKnF6IxRYqqsCuVAB"}},{"num":"20","name":"審判","up":{"msg":"過去の努力が認められて、素晴らしい報せが届くニャ。","cat":"昔なくしたボールが見つかったニャ！復活の合図ニャ！","pro":"カードは告げています…魂の目覚めのとき。過去を手放し、新たな自分として生まれ変わって。","img":"https://drive.google.com/uc?export=view&id=1GedICB0beCHNRB0cN8IigauTBuxabS6j"},"rev":{"msg":"再挑戦したいけれど、まだ心の準備ができていないニャ。","cat":"良い知らせが聞こえないニャ。まだ眠る時ニャ。","pro":"カードは告げています…自己評価が厳しすぎます。自分を許すことで前に進めます。","img":"https://drive.google.com/uc?export=view&id=10C0ye_kLBFmcypQK3BBK9yr1UOIti4eQ"}},{"num":"21","name":"世界","up":{"msg":"最高の結末を迎えて、すべてが完璧に整うニャ。","cat":"これが私の完成形。完璧な香箱座りニャ！","pro":"カードは告げています…一つの完成と達成のとき。あなたはすでに必要なものをすべて持っています。","img":"https://drive.google.com/uc?export=view&id=1S-hFAUf-GWW_GwzmrnYIPdjlpkkvliHx"},"rev":{"msg":"あと一歩のところで、詰めが甘くなってしまうニャ。","cat":"あとちょっとで完璧だったのに、しっぽが出てるニャ。","pro":"カードは告げています…もう少しで完成します。焦らず最後まで丁寧に歩みを進めて。","img":"https://drive.google.com/uc?export=view&id=1pgrfxUtnVYdXlgGf8r046jBWbBZ5XIzp"}},{"num":"22","name":"ワンドのA","up":{"msg":"新しい情熱が湧き上がり、何かを始める勢いがあるニャ。","cat":"新しいおもちゃを見つけたニャ！ワクワクが止まらないニャ！","pro":"カードは告げています…情熱と創造のエネルギーが満ちています。新しい挑戦を恐れずに。","img":"https://drive.google.com/uc?export=view&id=1kf86dl9TgI5ssOhZ6TU4Ezao2q8-8T-h"},"rev":{"msg":"せっかくのやる気が削がれて、やる気が起きないニャ。","cat":"追いかけたけど、どこかへ行っちゃったニャ…。","pro":"カードは告げています…エネルギーが空回りしています。一度立ち止まり方向を確認して。","img":"https://drive.google.com/uc?export=view&id=1t0BOCr7-ElFHXJMzq2VJZMVBXvuHjR2g"}},{"num":"23","name":"ワンドの2","up":{"msg":"自信を持って、次のステップへ進む準備ができたニャ。","cat":"高いところから下を見るニャ。世界は私のものニャ！","pro":"カードは告げています…大きな夢への第一歩。あなたの情熱が未来を切り開きます。","img":"https://drive.google.com/uc?export=view&id=1_HYGA0prl0wyA8_uzYmjQCOPHXh2UTHz"},"rev":{"msg":"自分の居場所が決まらず、迷いが生じているニャ。","cat":"外に出るのがちょっと怖いニャ。窓から見てるだけにするニャ。","pro":"カードは告げています…情熱が空回りしています。焦らず基盤を固めることから始めて。","img":"https://drive.google.com/uc?export=view&id=1DAAlckTyHArsk-pW2cdDhRRayryVzxo0"}},{"num":"24","name":"ワンドの3","up":{"msg":"将来の展望が広がり、期待に胸が膨らんでいるニャ。","cat":"遠くの島まで冒険に行けそうな気がするニャ。出発だニャ！","pro":"カードは告げています…可能性が広がっています。どの道を選んでも光があります。","img":"https://drive.google.com/uc?export=view&id=1F5ovXdCbuJgVCg7jsg5e_UkwIByYzINl"},"rev":{"msg":"計画が遅れたり、思うように進まなかったりするニャ。","cat":"お船がなかなか来ないニャ…。退屈だニャ。","pro":"カードは告げています…選択肢に迷いすぎています。直感を信じて一つに絞って。","img":"https://drive.google.com/uc?export=view&id=1flBlfa1CVJE6chfTF8gS_Cxltkd5RfuY"}},{"num":"25","name":"ワンドの4","up":{"msg":"平和で穏やかな時間を、仲間と一緒に楽しめるニャ。","cat":"お家が一番ニャ。みんなで集まってお昼寝するニャ。","pro":"カードは告げています…帰るべき場所があなたを待っています。安らぎを大切に。","img":"https://drive.google.com/uc?export=view&id=1LQIHIYSDm8vUaqbSGg6BDj6tNEFEQyvL"},"rev":{"msg":"ささいなことでギスギスして、落ち着かないニャ。","cat":"誰かが私のクッションを占領してるニャ。落ち着かないニャ。","pro":"カードは告げています…帰れない焦りを感じていませんか。今いる場所に意味があります。","img":"https://drive.google.com/uc?export=view&id=1GNSJb4wN64k569l7ymfZBn078EKAXNL8"}},{"num":"26","name":"ワンドの5","up":{"msg":"周りと意見がぶつかるけれど、それが刺激になるニャ。","cat":"みんなでじゃれ合いニャ！誰が一番強いか勝負だニャ！","pro":"カードは告げています…競争や挑戦の中に成長があります。自信を持って立ち向かって。","img":"https://drive.google.com/uc?export=view&id=152AtgtPu_9Eux-_6sEuD-4McwgyIiuxS"},"rev":{"msg":"無意味な争いに巻き込まれて、ただ疲れてしまうニャ。","cat":"爪が出ちゃって痛いニャ。ケンカはもう終わりにするニャ。","pro":"カードは告げています…争いや競争に疲れていませんか。引き際を見極めることも大切です。","img":"https://drive.google.com/uc?export=view&id=17jTppMKmCWGFMAhpoC97EADItc_pXhby"}},{"num":"27","name":"ワンドの6","up":{"msg":"努力が認められて、周りから賞賛を浴びるニャ。","cat":"私が一番ニャ！みんながカリカリをくれるニャ。","pro":"カードは告げています…勝利と達成の予感。これまでの努力が実を結ぼうとしています。","img":"https://drive.google.com/uc?export=view&id=16jfxfAHdGU-K2h9y0S6Yus7-mG8KwNSz"},"rev":{"msg":"頑張ったのに認めてもらえず、自信を失いそうだニャ。","cat":"せっかく獲物を捕ったのに、誰にも気づいてもらえないニャ。","pro":"カードは告げています…達成感が得られていないかもしれません。プロセスにも目を向けて。","img":"https://drive.google.com/uc?export=view&id=17k-J1A2c1EUpU9MfdRgnhyaemjdKf1-6"}},{"num":"28","name":"ワンドの7","up":{"msg":"困難な状況でも、自分を信じて守り抜く強さがあるニャ。","cat":"ここは私の場所ニャ！絶対にどかないニャ！","pro":"カードは告げています…防衛本能が働いています。大切なものを守る強さがあなたにはあります。","img":"https://drive.google.com/uc?export=view&id=1puIr_sSnT_iX8MAUHgfaM2uf9WujqQ5o"},"rev":{"msg":"周囲に圧倒されて、弱気になってしまいそうだニャ。","cat":"囲まれちゃったニャ。どうやって逃げようかニャ…。","pro":"カードは告げています…防衛しすぎて孤立していませんか。心を少し開いてみて。","img":"https://drive.google.com/uc?export=view&id=1NbwfgqwhLwY4fP1S8tvz-gakk4kTUux1"}},{"num":"29","name":"ワンドの8","up":{"msg":"物事が急展開して、一気にゴールへ向かうニャ。","cat":"ものすごい勢いで何かがやってくるニャ！チャンスだニャ！","pro":"カードは告げています…変化と移動の時。新しい場所があなたに新鮮なエネルギーをもたらします。","img":"https://drive.google.com/uc?export=view&id=14nfKt9jZE2eAsHr_-own5IY7tJwBINuM"},"rev":{"msg":"勢い余ってミスをしたり、パニックになったりするニャ。","cat":"勢いがつきすぎて、止まり方がわからないニャ！","pro":"カードは告げています…逃げ出したい気持ちがあるかもしれません。向き合うべきことがあります。","img":"https://drive.google.com/uc?export=view&id=1XLkmq7wQ85nYD7qDaF3tPuky9B9a5rtD"}},{"num":"30","name":"ワンドの9","up":{"msg":"これまでの経験を活かして、慎重に構える時ニャ。","cat":"また嫌な予感がするニャ…。しっぽを立てて警戒するニャ。","pro":"カードは告げています…強い意志と行動力があなたを前進させます。迷わず突き進んで。","img":"https://drive.google.com/uc?export=view&id=1SOoI3q6IXSXu9tralKWXIqBnq735iH5_"},"rev":{"msg":"守りが甘くなって、隙を突かれてしまいそうだニャ。","cat":"不意打ちをくらったニャ。もっと注意深くするべきだったニャ。","pro":"カードは告げています…強引さが裏目に出ています。柔軟に対応することで道が開けます。","img":"https://drive.google.com/uc?export=view&id=1zs14EtBhRt0YqR7HbMAVynEwWAVb1avE"}},{"num":"31","name":"ワンドの10","up":{"msg":"責任や仕事が多すぎて、限界を感じているニャ。","cat":"おもちゃを運びすぎて、もうヘトヘトだニャ…。","pro":"カードは告げています…情熱的なエネルギーが周囲を動かします。リーダーシップを発揮して。","img":"https://drive.google.com/uc?export=view&id=1Ukm0S2LqeumhOGO4Kw0cbv9Uauvv93rQ"},"rev":{"msg":"重荷から解放されて、ようやく一息つけるニャ。","cat":"重い荷物を捨てて、身軽になったニャ。あー楽だニャ！","pro":"カードは告げています…エネルギーが分散しています。一つのことに集中する時です。","img":"https://drive.google.com/uc?export=view&id=1vJJFAu_aKi585btAOZ3wmLDHyz5sjGZp"}},{"num":"32","name":"ワンドのペイジ","up":{"msg":"純粋な好奇心を持って、新しい冒険に挑むニャ。","cat":"あっちに何があるか気になるニャ！ちょっと見てくるニャ。","pro":"カードは告げています…創造と情熱の女王。あなたの魅力が人々を惹きつけています。","img":"https://drive.google.com/uc?export=view&id=1kSXaQoBUrIroxgbMYdGEjGcciIfwE4Cy"},"rev":{"msg":"考えなしに行動して、後悔してしまいそうだニャ。","cat":"走ってみたけど、どこへ行くか忘れちゃったニャ。","pro":"カードは告げています…情熱を見失っていませんか。あなたの中の炎はまだ消えていません。","img":"https://drive.google.com/uc?export=view&id=1zzgCxcbsV7ulb7UmG9Qxa6bglN3Cjlge"}},{"num":"33","name":"ワンドのナイト","up":{"msg":"高い志を持って、迷わず突き進んでいくニャ。","cat":"考えるより先に体が動いちゃうニャ！突撃だニャ！","pro":"カードは告げています…ビジョンを持って行動するとき。大局を見据えた判断が大切です。","img":"https://drive.google.com/uc?export=view&id=10EqnspPvg8A-OuEeJXyCSEZ9wSzq4P_5"},"rev":{"msg":"焦りすぎて空回りし、トラブルを起こしやすいニャ。","cat":"無茶しすぎて、毛がボサボサになったニャ。","pro":"カードは告げています…視野が狭くなっています。もう少し広い視点で物事を見て。","img":"https://drive.google.com/uc?export=view&id=1U6alvtbTH1zcWdLx9V6-_1DGYVPfHrfy"}},{"num":"34","name":"ワンドのクイーン","up":{"msg":"自信に満ち溢れ、周りを惹きつける魅力があるニャ。","cat":"私が歩けばみんな振り返るニャ。華麗に決めるニャ。","pro":"カードは告げています…情熱の頂点に立っています。あなたの力が最大限に輝いています。","img":"https://drive.google.com/uc?export=view&id=1lpgHBIted9q2WkAho1vgx2sXJK_IgTxb"},"rev":{"msg":"わがままが過ぎて、周りを困らせてしまいそうだニャ。","cat":"私を見ないなんて許さないニャ！もっとかまってニャ！","pro":"カードは告げています…力を誇示しすぎていませんか。謙虚さが新たな道を開きます。","img":"https://drive.google.com/uc?export=view&id=1wjZAxBKI7qjC5eYvx7HJ7QaMUdvMXU6H"}},{"num":"35","name":"ワンドのキング","up":{"msg":"強いリーダーシップで、みんなを引っ張っていくニャ。","cat":"私がこの家のボスニャ。みんな、私の後についてくるニャ！","pro":"カードは告げています…燃え尽きる前に立ち止まって。重荷を手放す勇気が必要です。","img":"https://drive.google.com/uc?export=view&id=1FANfRV7PrC5FlDMty_Y45WaUdadG-a7O"},"rev":{"msg":"自分の力を過信して、独裁的になりすぎているニャ。","cat":"厳しくしすぎて、みんな逃げちゃったニャ…。反省だニャ。","pro":"カードは告げています…限界を超えようとしています。休むことも前進の一つです。","img":"https://drive.google.com/uc?export=view&id=160AxtrHP_O98bzzFpbSLpMtnXb1nV0tJ"}},{"num":"36","name":"カップのA","up":{"msg":"新しい愛や喜びが溢れ出す時ニャ。","cat":"お鼻を近づけて、ご挨拶。新しいお友達ができたニャ！","pro":"カードは告げています…新しい感情の始まり。心を開いて愛とインスピレーションを受け取って。","img":"https://drive.google.com/uc?export=view&id=1_NOGd5Ea5lnOckb6uofJ6hKUgZyk8Bni"},"rev":{"msg":"感情が空っぽで寂しいニャ。","cat":"お皿が空っぽで、心もカサカサになっちゃったニャ。","pro":"カードは告げています…感情を受け取ることへの恐れがあります。心を少し開いてみて。","img":"https://drive.google.com/uc?export=view&id=1dLO1bKSk-XmeECVV8vyLDZ4Q0juLJVIZ"}},{"num":"37","name":"カップの2","up":{"msg":"二人の心がぴったり重なるニャ。","cat":"大好きなあの子と、しっぽを絡ませて仲良しニャ.","pro":"カードは告げています…愛と調和に満ちた関係が築かれています。大切な絆を育んで。","img":"https://drive.google.com/uc?export=view&id=1wwgMr2fwp_7WSQRDBvy200iBYw5VWzoF"},"rev":{"msg":"心がすれ違って、仲違いするニャ。","cat":"フシャーッ！とやっちゃった。仲直りしたいけど勇気が出ないニャ。","pro":"カードは告げています…関係に不調和が生じています。対話を大切にして。","img":"https://drive.google.com/uc?export=view&id=1AJgGmraJlCWA7oT5WXie-mpwBxSNh33X"}},{"num":"38","name":"カップの3","up":{"msg":"仲間と喜びを分かち合うニャ。","cat":"みんなで集まって、カリカリパーティーの始まりニャ！","pro":"カードは告げています…創造的なインスピレーションが降りてきます。感性を信じて表現して。","img":"https://drive.google.com/uc?export=view&id=1hzNYluC8L5935_b2v5kJ02IjAK1EW1rv"},"rev":{"msg":"集まりが楽しくなくて、疎外感を感じるニャ。","cat":"みんなで遊んでいるのに、なんだか輪に入れないニャ…。","pro":"カードは告げています…創造性が滞っています。プレッシャーを手放すと流れが戻ります。","img":"https://drive.google.com/uc?export=view&id=1VimTM9AHUmr911xVtst22hXNi8gHD0E5"}},{"num":"39","name":"カップの4","up":{"msg":"今の状況に飽きて、不満を感じてるニャ。","cat":"また同じおもちゃニャ？もうそれには飽きちゃったニャ。","pro":"カードは告げています…過去の思い出が心を満たしています。懐かしさの中に大切なものがあります。","img":"https://drive.google.com/uc?export=view&id=1Bu7s1uehc66t0kNIKQSCIwbx0mbAKXo6"},"rev":{"msg":"新しい刺激やチャンスに気づくニャ。","cat":"おっ？新しいおもちゃの予感！ちょっとだけ動いてみるニャ。","pro":"カードは告げています…過去への執着が前進を妨げています。思い出は胸に、歩みは前へ。","img":"https://drive.google.com/uc?export=view&id=1HwfAftbbrq-aXqBvuFOBKwJRxqbYJ4o6"}},{"num":"40","name":"カップの5","up":{"msg":"失ったものを嘆いて、悲しみに暮れるニャ。","cat":"お気に入りのボールを失くして、立ち直れないニャ…。","pro":"カードは告げています…新しい選択肢が現れています。心が求めるものを選んで。","img":"https://drive.google.com/uc?export=view&id=1ssYaClpj9Hx2NXxK3JUuay0arNCIJ9be"},"rev":{"msg":"前を向いて、残ったものに気づくニャ。","cat":"あ、あっちにまだ別のおもちゃが落ちていたニャ！","pro":"カードは告げています…選択に迷いすぎています。本当に望むものと向き合って。","img":"https://drive.google.com/uc?export=view&id=1d7mfWhJr6rpcW0xnhijG8K4TD64xLT3l"}},{"num":"41","name":"カップの6","up":{"msg":"昔の懐かしい記憶に浸る時ニャ。","cat":"子猫の頃に遊んだ、あの日の夢を見てるニャ。","pro":"カードは告げています…喜びと祝福のとき。大切な人との絆が深まっています。","img":"https://drive.google.com/uc?export=view&id=1ZOwqZSRcCZiTx6mCx_IKPSPHgN112_ZT"},"rev":{"msg":"過去に執着しすぎて、前が見えないニャ。","cat":"「昔は良かったニャ」なんて、おじいちゃん猫みたいなこと言ってるニャ。","pro":"カードは告げています…喜びが感じられなくなっていませんか。小さな幸せに目を向けて。","img":"https://drive.google.com/uc?export=view&id=1ctPPDvFlPVaIWxA3IWINewOSKbS_U6ZH"}},{"num":"42","name":"カップの7","up":{"msg":"たくさんの選択肢に迷って、妄想が広がるニャ。","cat":"どのおやつも美味しそうで、選べなくてヨダレが出るニャ。","pro":"カードは告げています…夢と幻想の世界にいます。理想を持ちながらも現実も見つめて。","img":"https://drive.google.com/uc?export=view&id=1WyYIzM3GNIG6QUBl285WhM49DWUz-V8d"},"rev":{"msg":"迷いが晴れて、現実が見えてくるニャ。","cat":"夢から覚めて、本当にお腹が空いていることに気づいたニャ。","pro":"カードは告げています…現実逃避が続いています。夢の中だけでなく現実も大切にして。","img":"https://drive.google.com/uc?export=view&id=17Wy_OMHX-76ZKkSVlk1nGcwqUw1z80d8"}},{"num":"43","name":"カップの8","up":{"msg":"積み上げたものを置いて、旅に出るニャ。","cat":"ここにはもう何もないニャ。新しい場所を探しに行くニャ.","pro":"カードは告げています…手放すことで新しいものが入ってきます。執着を解放する勇気を。","img":"https://drive.google.com/uc?export=view&id=11UDR_pxdqJWauZ8iosaOfMdaYRtOwoB2"},"rev":{"msg":"諦めきれずに、その場に留まるニャ。","cat":"行かなきゃいけないのに、足が動かないニャ。","pro":"カードは告げています…手放せないものが足かせになっています。執着を解くことで自由になれます。","img":"https://drive.google.com/uc?export=view&id=1vwQQO8rQCinEXdMtN2qk6RSmt1V5ZLSz"}},{"num":"44","name":"カップの9","up":{"msg":"願いが叶って、心から満足するニャ。","cat":"最高のご飯を食べて、お腹いっぱいで幸せニャ！","pro":"カードは告げています…願いが叶うとき。宇宙があなたの望みに応えようとしています。","img":"https://drive.google.com/uc?export=view&id=1OiPj5CUGU14f3waN95XQpEgMqB-qk8GU"},"rev":{"msg":"贅沢しすぎて、中身が伴わないニャ。","cat":"食べてばっかりで、体が重くてジャンプできないニャ。","pro":"カードは告げています…願いが叶わない焦りがあります。タイミングを宇宙に委ねて。","img":"https://drive.google.com/uc?export=view&id=19ZQn4wUtl-I8FLrDBdryU8SJkiA1Duz7"}},{"num":"45","name":"カップの10","up":{"msg":"家族や仲間と、最高の幸せを感じるニャ。","cat":"みんなで寄り添って眠る、一番安心できる場所だニャ。","pro":"カードは告げています…感情的な知性があなたを導きます。心の声に従って進んで。","img":"https://drive.google.com/uc?export=view&id=1BWT4tV3UKLkSoHkV_UPYmGY7pqWlPaNO"},"rev":{"msg":"家庭内がギスギスして、落ち着かないニャ。","cat":"みんなバラバラの場所を向いてて、寂しいニャ…。","pro":"カードは告げています…感情に流されすぎています。少し客観的な視点を持って。","img":"https://drive.google.com/uc?export=view&id=1vr8s6vmjhv3h_QtioGqmhhqWnGlYBN4I"}},{"num":"46","name":"カップのペイジ","up":{"msg":"新しいインスピレーションや知らせが届くニャ。","cat":"不思議な水の音が聞こえるニャ。何かいいことがありそうニャ！","pro":"カードは告げています…豊かな感情と直感の女王。愛と共感があなたの周りに溢れています。","img":"https://drive.google.com/uc?export=view&id=1gIuRqGBtLO1_Q-zaTyeF_GU6IzwAGH4r"},"rev":{"msg":"想像力が空回りして、子供っぽくなるニャ。","cat":"変なことに夢中になって、泥んこになっちゃったニャ。","pro":"カードは告げています…感情的になりすぎていませんか。冷静さを取り戻すことが大切です。","img":"https://drive.google.com/uc?export=view&id=1zlQH3f4hBZbhCWdxTI_5nI1uE6GVU6H1"}},{"num":"47","name":"カップのナイト","up":{"msg":"優しく進んで、周りを癒してあげるニャ。","cat":"悲しんでいる子には、優しくスリスリしてあげるニャ。","pro":"カードは告げています…感情と直感のバランスが取れています。心の知性を信頼して。","img":"https://drive.google.com/uc?export=view&id=1ACQW-yX9n2T_dNNbvrmRleqRD5QRFa_g"},"rev":{"msg":"感情が不安定で、周りを振り回しちゃうニャ。","cat":"急に不機嫌になって、猫パンチしちゃったニャ。","pro":"カードは告げています…感情と理性のバランスが崩れています。心を落ち着かせる時間を。","img":"https://drive.google.com/uc?export=view&id=1FSzfbnbGWS2WLD3bfiYG-R7cV2ByCBr5"}},{"num":"48","name":"カップのクイーン","up":{"msg":"広い心で、すべてを受け入れるニャ。","cat":"どんな時でも動じない。海のようにおおらかな心ニャ。","pro":"カードは告げています…感情的な成熟と愛の完成。深い愛情があなたを包んでいます。","img":"https://drive.google.com/uc?export=view&id=1fz4rM96oZWEvGUvW5k86iqqpGKKFWHS-"},"rev":{"msg":"自分の感情に溺れて、周りが見えないニャ。","cat":"心がザワザワして、誰の言うことも聞こえないニャ。","pro":"カードは告げています…感情的な成熟が求められています。愛は与えるだけでなく受け取ることも大切。","img":"https://drive.google.com/uc?export=view&id=15_-uEcJ02cnQXSBaIbaxCxb_ewyrqzm4"}},{"num":"49","name":"カップのキング","up":{"msg":"深い愛情を持って、みんなを見守るニャ。","cat":"静かに見守るのが私の愛ニャ。安心しておやすみニャ。","pro":"カードは告げています…感情的な疲れを感じているかもしれません。休息と癒しの時間を。","img":"https://drive.google.com/uc?export=view&id=1roxxx1q5jkdd2f83cUZqSdD5AHzfpdlJ"},"rev":{"msg":"感情をコントロールできなくて、攻撃的になるニャ。","cat":"イライラして、爪研ぎをボロボロにしちゃったニャ。","pro":"カードは告げています…感情的な疲弊が限界に近づいています。自分を癒すことを優先して。","img":"https://drive.google.com/uc?export=view&id=1YFAAWwuuydTNgduTLmnG8mQXKMMyBfLa"}},{"num":"50","name":"ソードのA","up":{"msg":"困難を切り裂き、新しい知恵や決断力で進む時ニャ。","cat":"鋭い爪を研いで準備万端ニャ！何が来ても怖くないニャ。","pro":"カードは告げています…新しい思考と明晰さが訪れます。真実を見極める力があなたにあります。","img":"https://drive.google.com/uc?export=view&id=1qzgRB68HYUZ64HxE3u2ypcd4qbsDxTuA"},"rev":{"msg":"考えすぎて頭が重く、決断を迷っているニャ。","cat":"考えすぎて知恵熱が出そうニャ。今は爪を隠しておくニャ。","pro":"カードは告げています…思考が混乱しています。一度頭を空にして静かな時間を持って。","img":"https://drive.google.com/uc?export=view&id=1AAI-23gw965xhCZneFnNghiQUjhviy3I"}},{"num":"51","name":"ソードの2","up":{"msg":"均衡を保ち、今は静かに心の声を聞く時ニャ。","cat":"目隠しして集中するニャ。心の耳で音を聞くんだニャ。","pro":"カードは告げています…困難な状況でも平和を選ぶとき。対話と知性で乗り越えられます。","img":"https://drive.google.com/uc?export=view&id=14mMvkoufeJyhQRVTRIuE6Ox8BLdzBeCc"},"rev":{"msg":"迷いが生じて、身動きが取れなくなっているニャ。","cat":"目隠しを外しても、まだ何も見えなくて不安だニャ。","pro":"カードは告げています…対立を避けすぎていませんか。伝えるべきことは伝えて。","img":"https://drive.google.com/uc?export=view&id=1cPMp5P5-4z_SIu7epv5I9VcI5vRrDAlp"}},{"num":"52","name":"ソードの3","up":{"msg":"信じていたことに傷つき、悲しい別れを経験するニャ。","cat":"雨の中に放り出された気分ニャ。涙が止まらないニャ…。","pro":"カードは告げています…痛みを伴う決断が必要かもしれません。しかし真実が道を開きます。","img":"https://drive.google.com/uc?export=view&id=1iK4WgxHmaJ-4j9lqW8ZcCyRoJuBdZYFK"},"rev":{"msg":"心の痛みが少しずつ和らぎ、回復へ向かっているニャ。","cat":"心のトゲが少しずつ抜けてきたニャ。もう大丈夫ニャ。","pro":"カードは告げています…冷酷な判断が人を傷つけています。思いやりを忘れないで。","img":"https://drive.google.com/uc?export=view&id=1GqhsHpEfz-liuUPugo-LkfHIVYaXF29J"}},{"num":"53","name":"ソードの4","up":{"msg":"心身ともに限界ニャ。今はすべてを忘れて休む時ニャ。","cat":"動かないニャ。誰が呼んでも今は絶対に起きないニャ。","pro":"カードは告げています…休息が必要なとき。心と体を癒すことが次の一歩につながります。","img":"https://drive.google.com/uc?export=view&id=1M0UG5q9fEKiCTxb6N8hmg5bnTbmSDu_N"},"rev":{"msg":"休息を終えて、ようやく活動を再開する兆しニャ。","cat":"無理やり起こされて、フラフラのまま歩き出すニャ。","pro":"カードは告げています…休息が取れていません。無理をし続けることで消耗しています。","img":"https://drive.google.com/uc?export=view&id=1-df-JughBJLjPavPnlpH0kTZs7EqBjxk"}},{"num":"54","name":"ソードの5","up":{"msg":"卑怯な手段を使ってでも、勝とうとしているニャ。","cat":"フシャーッ！と横取りしたけど、なんだか後味が悪いニャ。","pro":"カードは告げています…葛藤の中にいます。自分の正義を貫くことで道が見えてきます。","img":"https://drive.google.com/uc?export=view&id=1Oo3tuZxY0EgmGC_xX_uVqud6LlG2Mesf"},"rev":{"msg":"不名誉な勝利よりも、負けを認めて楽になる時ニャ。","cat":"意地を張るのをやめたら、肩の力が抜けて楽になったニャ。","pro":"カードは告げています…争いに巻き込まれています。引き際を見極めることが賢明です。","img":"https://drive.google.com/uc?export=view&id=1IZEzPtllRXGqAkRhq4T2_h6lc0JmT77R"}},{"num":"55","name":"ソードの6","up":{"msg":"今の苦しい場所を離れ、新しい天地へ向かう時ニャ。","cat":"お船に乗って向こう岸へ行くニャ。もう振り返らないニャ。","pro":"カードは告げています…敗北感を感じているかもしれません。しかしそこに学びがあります。","img":"https://drive.google.com/uc?export=view&id=121sZpgPxdnsQSIjXD2dLf3xVERsLwcr4"},"rev":{"msg":"過去に執着して、なかなか新しい場所へ進めないニャ。","cat":"嵐が来てお船が出せないニャ。まだここに居なきゃダメかニャ。","pro":"カードは告げています…敗北から立ち直れていませんか。失敗は終わりではありません。","img":"https://drive.google.com/uc?export=view&id=1CsYDmWkszTY8fvgmGuYVSLhLCdkWKr-7"}},{"num":"56","name":"ソードの7","up":{"msg":"知恵や策略を使い、うまく立ち回って切り抜けるニャ。","cat":"こっそりおやつを運び出すニャ。誰にも見つからないニャ！","pro":"カードは告げています…不安や恐れが心を支配しています。一つひとつ丁寧に向き合って。","img":"https://drive.google.com/uc?export=view&id=1M1TFlcikW5xbhudwfok8UyRuKpVYjQGJ"},"rev":{"msg":"隠し事がバレたり、卑怯なやり方を後悔したりするニャ。","cat":"コソコソしすぎて、逆におかしく怪しまれちゃったニャ。","pro":"カードは告げています…恐れが行動を妨げています。小さな一歩から始めてみて。","img":"https://drive.google.com/uc?export=view&id=1l_F85NlIXRkxAFCbp-dKCSftaKFI3kbL"}},{"num":"57","name":"ソードの8","up":{"msg":"思い込みに縛られ、動けなくなっているニャ。","cat":"囲まれて絶体絶命ニャ！…と思ったら紐がゆるゆるだったニャ。","pro":"カードは告げています…行き詰まりを感じていますか。実は出口はすぐそこにあります。","img":"https://drive.google.com/uc?export=view&id=1mGwYn9y9SmYOTOXQLtTCYwjMr8fLoXLp"},"rev":{"msg":"本当は自由になれるのに、恐怖でそれが見えないニャ。","cat":"縛っていた紐が解けて、やっと自由に走れるようになったニャ。","pro":"カードは告げています…諦めてしまいそうですか。もう少しだけ踏ん張ってみて。","img":"https://drive.google.com/uc?export=view&id=1oSPIzAIsynTi3kc7WC49S5dOhrD7Ti2R"}},{"num":"58","name":"ソードの9","up":{"msg":"不安や後悔で眠れないほど、心が苦しい状態ニャ。","cat":"夜中に目が覚めて、怖い夢を思い出して震えてるニャ。","pro":"カードは告げています…冷静な判断力があなたを導きます。感情に流されず真実を見て。","img":"https://drive.google.com/uc?export=view&id=1B_3QEdscTC0Si_HFUo-eml-DNDpkaMST"},"rev":{"msg":"不安の正体が分かり、ようやく夜が明ける予感ニャ。","cat":"夜が明けてきたニャ。怖い影はただのカーテンだったニャ。","pro":"カードは告げています…冷静さを失っています。感情が判断を曇らせているかもしれません。","img":"https://drive.google.com/uc?export=view&id=1_0-kG6MU021TIK6ESQ9-3yWi_MH9LecC"}},{"num":"59","name":"ソードの10","up":{"msg":"これ以上の不幸はない、どん底の状態ニャ。","cat":"もうボロボロだニャ…。これ以上は一歩も動けないニャ。","pro":"カードは告げています…知性と行動力で前進するとき。目標に向かって迷わず進んで。","img":"https://drive.google.com/uc?export=view&id=19nMo1Dh5ctLrY-pQtzxI4qRM1cs9Ry_q"},"rev":{"msg":"最悪の時期を過ぎ、少しずつ再生が始まる時ニャ。","cat":"最悪の時期は過ぎたニャ。少しずつ毛繕いを始めるニャ。","pro":"カードは告げています…攻撃性が裏目に出ています。力を抜くことで状況が好転します。","img":"https://drive.google.com/uc?export=view&id=1FgXZt6CMOrCZp3fVbeGAP58ylTMK9Wes"}},{"num":"60","name":"ソードのペイジ","up":{"msg":"鋭い観察力で、新しい情報をキャッチする時ニャ。","cat":"風の匂いが変わったニャ。何かが起きる予感がするニャ！","pro":"カードは告げています…鋭い知性と判断力の女王。真実を見抜く力があなたには備わっています。","img":"https://drive.google.com/uc?export=view&id=16yNodWbMrgzslD0LD617crEFCbKH2I2j"},"rev":{"msg":"疑い深くなりすぎて、チャンスを逃してしまうニャ。","cat":"疑いすぎて、親切な人にも猫パンチしちゃったニャ。","pro":"カードは告げています…感情を切り捨てすぎていませんか。心の柔らかさも大切にして。","img":"https://drive.google.com/uc?export=view&id=1q8S5sDPFn7p8xS-oeCmuGOFB3iLHdMv_"}},{"num":"61","name":"ソードのナイト","up":{"msg":"猛スピードで目標に向かって突き進む時ニャ。","cat":"一陣の風になるニャ！邪魔する奴はなぎ倒すニャ！","pro":"カードは告げています…知性と権威で状況を掌握するとき。公正な判断が求められています。","img":"https://drive.google.com/uc?export=view&id=1omRrpiBMSBmlgbsMvQWal8q-vedQ-9up"},"rev":{"msg":"勢い余って周囲と衝突したり、空回りしたりするニャ。","cat":"勢い良すぎて、大事なものを踏んづけて通り過ぎたニャ。","pro":"カードは告げています…権威を振りかざしていませんか。謙虚さが信頼を生みます。","img":"https://drive.google.com/uc?export=view&id=11gJOBgKC1dV9v1bdnPJPS3-RJFardsHQ"}},{"num":"62","name":"ソードのクイーン","up":{"msg":"冷静沈着に事実を見極め、厳しい判断を下すニャ。","cat":"甘えは一切許さないニャ。ピシッと厳しく指導するニャ。","pro":"カードは告げています…知性の頂点に立つとき。明晰な思考があなたを勝利へと導きます。","img":"https://drive.google.com/uc?export=view&id=126De_9kAWvRjxPZcFbVzqsq5exBpA1K8"},"rev":{"msg":"正論を押し付けすぎて、周囲を傷つけているニャ。","cat":"正論すぎて言い返せないニャ。でももう少し優しくしてニャ。","pro":"カードは告げています…力の乱用に注意を。知性は人を傷つけるためにあるのではありません。","img":"https://drive.google.com/uc?export=view&id=1QF9UyORQIgvrDSNt4HOkn7xImrD68ybI"}},{"num":"63","name":"ソードのキング","up":{"msg":"圧倒的な知性と公平さで、物事をコントロールするニャ。","cat":"私が決めたことがルールニャ。文句がある奴は前に出るニャ。","pro":"カードは告げています…長い苦しみの後に夜明けが来ます。終わりは必ず訪れます。","img":"https://drive.google.com/uc?export=view&id=1x-47Ve3mLE_kDLNcDHd8wnM91N_315pq"},"rev":{"msg":"権力を振りかざして、強引に支配しようとしているニャ。","cat":"権力を使いすぎて、みんなを怖がらせてしまったニャ。","pro":"カードは告げています…苦しみが長引いています。助けを求める勇気を持って。","img":"https://drive.google.com/uc?export=view&id=1nWjxp13q0uo9LTWh7XO2n8g8PyI4fvJZ"}},{"num":"64","name":"ペンタクルのA","up":{"msg":"新しい豊かさの種が手に入り、チャンスが来るニャ。","cat":"お庭でキラキラ光るコインを見つけたニャ！宝物にするニャ。","pro":"カードは告げています…豊かさへの扉が開きます。地に足をつけて一歩ずつ進んで。","img":"https://drive.google.com/uc?export=view&id=1swgtN4dj_xTX5qvbd37VbWC-SYNTaENw"},"rev":{"msg":"せっかくの好機を逃したり、無駄遣いしたりするニャ。","cat":"お宝だと思ったのに、ただの石ころだったニャ…。","pro":"カードは告げています…物質的な不安が心を占めています。今あるものに目を向けて。","img":"https://drive.google.com/uc?export=view&id=18LzMPXI4GVxLRHYNZabdj1vf8-eq34pc"}},{"num":"65","name":"ペンタクルの2","up":{"msg":"状況の変化にうまく対応し、バランスを取る時ニャ.","cat":"二つのボールを上手に転がして遊ぶニャ。器用だニャ。","pro":"カードは告げています…努力が実を結ぶとき。物質的な安定があなたに訪れます。","img":"https://drive.google.com/uc?export=view&id=1Uq_Mfdqxeou-wYTA-eD2LskChWv7Xqfg"},"rev":{"msg":"優先順位を間違えて、混乱してしまいそうだニャ。","cat":"欲張って両方追いかけたら、どっちも逃げちゃったニャ。","pro":"カードは告げています…努力が報われない焦りがあります。タイミングを信じて続けて。","img":"https://drive.google.com/uc?export=view&id=1TrJq13caY23rgvboAB98uIkdu5rXk-vy"}},{"num":"66","name":"ペンタクルの3","up":{"msg":"技術を磨き、仲間と協力して作り上げる時ニャ。","cat":"みんなで協力して、大きなキャットタワーを作るニャ！","pro":"カードは告げています…才能と努力が認められるとき。自信を持って前に進んで。","img":"https://drive.google.com/uc?export=view&id=1vwuX07pHxgZH08mCBAooPHoJDzxb1Dq9"},"rev":{"msg":"手抜きをしたり、チームワークが乱れたりするニャ。","cat":"一匹でやろうとして、バラバラになっちゃったニャ。","pro":"カードは告げています…才能を過小評価していませんか。あなたにはもっと力があります。","img":"https://drive.google.com/uc?export=view&id=1AKhGyoQk7FNh_zrX_LGxs-nmmcdAOA6T"}},{"num":"67","name":"ペンタクルの4","up":{"msg":"今の持ち物に執着し、心を閉ざしてしまっているニャ。","cat":"これは私のものニャ！誰にも、一歩も譲らないニャ！","pro":"カードは告げています…安定と豊かさに感謝するとき。今あるものの価値を見つめて。","img":"https://drive.google.com/uc?export=view&id=14U_9qhngHzrvAQxg_fOX6b15wT4RiNLM"},"rev":{"msg":"独占欲が強くなり、新しい変化を受け入れられないニャ。","cat":"抱え込みすぎて、身動きが取れなくなっちゃったニャ。","pro":"カードは告げています…豊かさへの執着が生じています。本当に大切なものを見極めて。","img":"https://drive.google.com/uc?export=view&id=1SxO-lfwvQ2mZKw_Boo6aFklaZHKG5N2v"}},{"num":"68","name":"ペンタクルの5","up":{"msg":"孤独や貧しさを感じるけれど、助けは近くにあるニャ。","cat":"お外は寒くてお腹も空いたニャ…。誰か気づいてニャ。","pro":"カードは告げています…長期的な視点で物事を考えるとき。着実な積み重ねが実を結びます。","img":"https://drive.google.com/uc?export=view&id=1hNydVxgWpOh11NIw_a9x_RkVKYoscUAI"},"rev":{"msg":"少しずつ状況が好転し、安心できる場所が見つかるニャ。","cat":"あっちに温かいお家があったニャ。助かったニャ…。","pro":"カードは告げています…短期的な利益に目が向きすぎています。長い目で見ることが大切です。","img":"https://drive.google.com/uc?export=view&id=1ti_nEG_5E4iTfG-hIKJlRO8VIg9V8NqO"}},{"num":"69","name":"ペンタクルの6","up":{"msg":"持てるものを分け合い、助け合う余裕がある時ニャ。","cat":"おやつを分けてあげるニャ。みんなで食べると美味しいニャ。","pro":"カードは告げています…寛大さが豊かさを呼び込みます。与えることで循環が生まれます。","img":"https://drive.google.com/uc?export=view&id=1q7TWomgSu3NESrr-MFiX4ga3X-CWatBD"},"rev":{"msg":"不公平な扱いを受けたり、下心に惑わされたりするニャ。","cat":"自分だけおやつをたくさんもらって、気まずいニャ…。","pro":"カードは告げています…与えすぎて自分が枯渇していませんか。まず自分を満たして。","img":"https://drive.google.com/uc?export=view&id=1nRva6Q1Lm3sjw0_Zyb49pA_JhWSITHxL"}},{"num":"70","name":"ペンタクルの7","up":{"msg":"成果を振り返り、今のやり方で良いか考える時ニャ。","cat":"一生懸命育てたけど、食べ頃はまだ先みたいだニャ。","pro":"カードは告げています…忍耐と努力が報われるとき。コツコツと積み上げてきたものが輝きます。","img":"https://drive.google.com/uc?export=view&id=1Gr0n_TJdSXs8rZjZlGR5-I5-W67QwNTK"},"rev":{"msg":"努力の割に実りが少なくて、不満を感じているニャ。","cat":"待ちくたびれて、やる気がなくなっちゃったニャ。","pro":"カードは告げています…努力が空回りしています。方向性を見直す時かもしれません。","img":"https://drive.google.com/uc?export=view&id=1DL4PZ5ajELqhvEQhFp_nCwLc4KZ7q99L"}},{"num":"71","name":"ペンタクルの8","up":{"msg":"地道な努力を積み重ね、技を極めていく時ニャ。","cat":"毎日爪を研いで、最高に鋭く仕上げるニャ！職人ニャ。","pro":"カードは告げています…スキルを磨くとき。丁寧な仕事があなたの価値を高めます。","img":"https://drive.google.com/uc?export=view&id=17w5h8xu_U9LgpQWLt8rmjcrHU_v_cTRb"},"rev":{"msg":"集中力が切れて、仕上がりが雑になってしまうニャ。","cat":"飽きちゃったニャ。もうこれくらいでいいかニャ…。","pro":"カードは告げています…完璧主義が前進を妨げています。80点でも前に進む勇気を。","img":"https://drive.google.com/uc?export=view&id=17_x2f5aa9t5epGIPadWN68jH7hfckEs_"}},{"num":"72","name":"ペンタクルの9","up":{"msg":"自立して、優雅で満たされた生活を楽しむ時ニャ。","cat":"誰にも邪魔されず、お庭で優雅にお昼寝するニャ。","pro":"カードは告げています…物質的な豊かさと精神的な充実が両立するとき。バランスを大切に。","img":"https://drive.google.com/uc?export=view&id=1dkxPRs7JTTrXlZ3JAn00nWsX0YtCj5ed"},"rev":{"msg":"贅沢に溺れたり、誰かに依存してしまったりするニャ。","cat":"見た目だけ豪華だけど、中身は寂しい気がするニャ。","pro":"カードは告げています…物質と精神のバランスが崩れています。どちらかに偏りすぎていませんか。","img":"https://drive.google.com/uc?export=view&id=1PXKF7iZgjQKJz1kQ8SX-gQVSV_1qsajO"}},{"num":"73","name":"ペンタクルの10","up":{"msg":"家族や伝統を守り、豊かな資産を受け継ぐニャ。","cat":"代々伝わるフカフカのクッションを受け継いだニャ。","pro":"カードは告げています…現実的な知恵と行動力があなたを豊かさへと導きます。","img":"https://drive.google.com/uc?export=view&id=1KoZJZmApt-_KGnxJd1fmIqGCe1NOo4Je"},"rev":{"msg":"家族のトラブルや、形あるものを失う恐れがあるニャ。","cat":"お家が広すぎて、なんだか落ち着かないニャ。","pro":"カードは告げています…現実から目を背けていませんか。地に足をつけて向き合う時です。","img":"https://drive.google.com/uc?export=view&id=1wXiwMBZzXSg5676u62uXT-nLR2tqT2xL"}},{"num":"74","name":"ペンタクルのペイジ","up":{"msg":"真面目に慎重に、新しい学びに取り組む時ニャ。","cat":"新しいコインをじっと見つめて、勉強中だニャ。","pro":"カードは告げています…豊かさと安定の女王。現実的な愛情があなたの周りを包んでいます。","img":"https://drive.google.com/uc?export=view&id=1SliTAavHWupsGWZ8fyrgVy7p1zNNf1ts"},"rev":{"msg":"夢ばかり見て、現実的な努力が足りていないニャ。","cat":"お勉強はもう嫌ニャ。遊びに行きたいニャ…。","pro":"カードは告げています…物質的な豊かさに囚われていませんか。本当の豊かさは内側にあります。","img":"https://drive.google.com/uc?export=view&id=1SOxIP97lqzfbM8l3Orlhqr-1dRous70E"}},{"num":"75","name":"ペンタクルのナイト","up":{"msg":"責任感を持って、着実に目標を達成していくニャ。","cat":"急がば回れニャ。一歩ずつ、確実に進むニャ。","pro":"カードは告げています…着実な努力が大きな実りをもたらします。信頼と安定があなたを支えます。","img":"https://drive.google.com/uc?export=view&id=11IIWTqgzXOsh5vPUfq53oOSvCY8rKK6t"},"rev":{"msg":"保守的すぎて動きが遅かったり、頑固になったりするニャ。","cat":"慎重になりすぎて、日が暮れちゃったニャ…。","pro":"カードは告げています…安定を求めすぎて変化を恐れていませんか。成長には変化が必要です。","img":"https://drive.google.com/uc?export=view&id=1UqQU7ojV8rfimbAbZckDokGEVpGSvcr_"}},{"num":"76","name":"ペンタクルのクイーン","up":{"msg":"豊かで慈愛に満ち、周囲に安心感を与えるニャ。","cat":"お腹も心も満たされて、みんなにお裾分けするニャ。","pro":"カードは告げています…物質的な豊かさの頂点。努力と忍耐がついに報われるときです。","img":"https://drive.google.com/uc?export=view&id=1n_sSzSzpb6IHetfMYfPQlndfXDeb--hu"},"rev":{"msg":"実利を優先しすぎて、心が乾いてしまいそうだニャ。","cat":"自分のことばかり考えて、周りを困らせちゃったニャ。","pro":"カードは告げています…豊かさへの執着が歪みを生んでいます。手放すことで流れが戻ります。","img":"https://drive.google.com/uc?export=view&id=1dIriJlhghL-8dnSOtdfr6RdPmhBl2ezR"}},{"num":"77","name":"ペンタクルのキング","up":{"msg":"圧倒的な成功を収め、実力者として認められるニャ。","cat":"このナワバリの豊かさは、すべて私が守り抜くニャ！","pro":"カードは告げています…長い努力の末に豊かさが訪れます。諦めなかったあなたへの贈り物です。","img":"https://drive.google.com/uc?export=view&id=10sNIItZI5mfMbCf_c4IhOKNGcoROskET"},"rev":{"msg":"頑固で融通が利かず、金銭欲が強すぎているニャ。","cat":"守るものが多すぎて、心がガチガチだニャ…。","pro":"カードは告げています…長い努力に疲れていませんか。休むことも大切な一歩です。","img":"https://drive.google.com/uc?export=view&id=1sCbvfy8uSkkqLZNewrhPO8tM_0XTqWTD"}}];
+
+const LUCKY_CATS = [
+  { type: "白猫", msg: "純粋・浄化の象徴だニャ。新しいスタートに吉！", emoji: "🤍", img: "2.png" },
+  { type: "茶とら", msg: "陽気でフレンドリーな日。楽しく過ごせるニャ！", emoji: "🧡", img: "6.png" },
+  { type: "茶白", msg: "おっとり平和な一日。のんびり構えててOKニャ。", emoji: "🤎", img: "9.png" },
+  { type: "黒ねこ", msg: "魔除けの守り神だニャ。悩みもスッキリ解決！", emoji: "🖤", img: "1.png" },
+  { type: "キジトラ", msg: "野性のパワーが宿るニャ。直感を信じて進むニャ！", emoji: "💛", img: "7.png" },
+  { type: "グレー白", msg: "柔らかい雰囲気で、人間関係がうまくいくニャ。", emoji: "🩶", img: "5.png" },
+  { type: "サバトラ", msg: "冷静沈着。スマートな判断ができる日だニャ。", emoji: "💙", img: "8.png" },
+  { type: "黒白とび", msg: "変化を楽しむニャ。新しい風が吹いてくるニャ！", emoji: "🤍", img: "14.png" },
+  { type: "グレー", msg: "穏やかな一日だニャ。自分を癒やしてあげるニャ。", emoji: "🩶", img: "3.png" },
+  { type: "ハチワレ", msg: "福を呼ぶ顔立ちニャ！思わぬ幸運がやってくるニャ！", emoji: "🍀", img: "4.png" },
+  { type: "ポインテッド", msg: "気品たっぷりだニャ。おしゃれがツキを呼ぶニャ。", emoji: "💜", img: "15.png" },
+  { type: "キジ白", msg: "誠実さが幸運を呼ぶニャ。一歩ずつ着実に歩むニャ。", emoji: "💚", img: "10.png" },
+  { type: "サバ白", msg: "クールでカッコいいニャ。自分らしく過ごして吉！", emoji: "💎", img: "11.png" },
+  { type: "サビ猫", msg: "賢くて愛情深いニャ。身近な幸せに気づける日だニャ。", emoji: "❤️", img: "13.png" },
+  { type: "三毛猫", msg: "究極のラッキー猫！思わぬ良いニュースが届く予感ニャ。", emoji: "⭐", img: "12.png" },
+];
+
+const QUOTES = [
+  "休むのも立派な仕事だニャ。今日は早めに寝るニャ！",
+  "自分を信じるニャ。あなたは今のままで十分素敵だニャ。",
+  "美味しいものを食べるニャ。それが一番の薬だニャ！",
+  "深呼吸するニャ。空を見上げるだけで運気が変わるニャ。",
+  "完璧じゃなくていいニャ。昨日より一歩進めば満点ニャ！",
+  "嫌なことは猫パンチで追い出すニャ！明日は明日の風が吹くニャ。",
+  "小さな幸せを見つける天才になるニャ。今日は何が楽しかった？",
+];
+
+const MENUS = [
+  { id: "one", icon: "🔮", title: "ワンオラクル", sub: "今のあなたへ 1枚のメッセージ", cards: 1 },
+  { id: "three", icon: "🌙", title: "スリーカード", sub: "過去・現在・未来を読み解く", cards: 3 },
+  { id: "decision", icon: "⚖️", title: "決断のとき", sub: "2つの選択肢、どちらを選ぶ？", cards: 2 },
+  { id: "release", icon: "🍃", title: "手放す・引き寄せる", sub: "手放すべきものと引き寄せるもの", cards: 2 },
+  { id: "celtic", icon: "✨", title: "ケルト十字", sub: "10枚で深く読み解く本格占い", cards: 10 },
+  { id: "omikuji", icon: "🎋", title: "今日のおみくじ", sub: "今日の運勢を猫が告げるニャ", cards: 0 },
+  { id: "lucky", icon: "🐈", title: "今日のラッキーキャット", sub: "あなたの今日の守り猫は？", cards: 0 },
+  { id: "quote", icon: "🐅", title: "トラさんの格言", sub: "秘密のアドバイスをもらう", cards: 0 },
+];
+
+const GITHUB_BASE = "https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/";
+
+function getImgUrl(cardName, isReversed) {
+  const filename = isReversed ? `${cardName} 逆位置.jpg` : `${cardName}.jpg`;
+  const encoded = filename.split("").map(c => {
+    if (c === " ") return "%20";
+    if (c.charCodeAt(0) > 127) return encodeURIComponent(c);
+    return c;
+  }).join("");
+  return GITHUB_BASE + encoded;
+}
+
+function drawCards(count) {
+  const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(card => {
+    const isReversed = Math.random() < 0.5;
+    const base = isReversed ? card.rev : card.up;
+    return {
+      ...card,
+      isReversed,
+      current: {
+        ...base,
+        img: getImgUrl(card.name, isReversed),
+        display: card.name + (isReversed ? "（逆位置）" : "（正位置）")
+      }
+    };
+  });
+}
+
+// ── Star Field ──
+(function() {
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  const stars = Array.from({length: 130}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + 0.3, alpha: Math.random() * 0.7 + 0.2,
+    speed: Math.random() * 0.25 + 0.05, tw: Math.random() * Math.PI * 2,
+  }));
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      s.tw += 0.018;
+      const a = s.alpha * (0.55 + 0.45 * Math.sin(s.tw));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,245,210,${a})`; ctx.fill();
+      s.y -= s.speed; s.x -= s.speed * 0.2;
+      if (s.y < 0) { s.y = canvas.height; s.x = Math.random() * canvas.width; }
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize', resize);
+})();
+
+// ── Cat SVG ──
+function makeCatSVG(size = 90) {
+  return `<div class="cat-svg-wrap" style="width:${size}px;height:${size}px">
+  <svg viewBox="0 0 100 100" width="${size}" height="${size}">
+    <defs>
+      <radialGradient id="g1" cx="50%" cy="60%" r="50%">
+        <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#7B2FBE" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="gf"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <ellipse cx="50" cy="76" rx="32" ry="9" fill="url(#g1)"/>
+    <ellipse cx="50" cy="64" rx="21" ry="19" fill="#1A1040" stroke="#C9A84C" stroke-width="1.5" filter="url(#gf)"/>
+    <circle cx="50" cy="42" r="21" fill="#1A1040" stroke="#C9A84C" stroke-width="1.5" filter="url(#gf)"/>
+    <polygon points="33,27 27,12 42,23" fill="#1A1040" stroke="#C9A84C" stroke-width="1.5"/>
+    <polygon points="67,27 73,12 58,23" fill="#1A1040" stroke="#C9A84C" stroke-width="1.5"/>
+    <polygon points="35,25 31,16 40,23" fill="#7B2FBE" opacity="0.55"/>
+    <polygon points="65,25 69,16 60,23" fill="#7B2FBE" opacity="0.55"/>
+    <ellipse cx="44" cy="41" rx="5" ry="6" fill="#7B2FBE"/>
+    <ellipse cx="56" cy="41" rx="5" ry="6" fill="#7B2FBE"/>
+    <ellipse cx="44" cy="41" rx="2.5" ry="4" fill="#0D0B2A"/>
+    <ellipse cx="56" cy="41" rx="2.5" ry="4" fill="#0D0B2A"/>
+    <circle cx="45.5" cy="39.5" r="1" fill="white" opacity="0.8"/>
+    <circle cx="57.5" cy="39.5" r="1" fill="white" opacity="0.8"/>
+    <polygon points="50,47 47,50 53,50" fill="#C9A84C" opacity="0.85"/>
+    <line x1="30" y1="49" x2="44" y2="51" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    <line x1="28" y1="52" x2="43" y2="53" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    <line x1="56" y1="51" x2="70" y2="49" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    <line x1="57" y1="53" x2="72" y2="52" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    <path d="M 29 75 Q 12 65 16 50 Q 19 42 26 48" fill="none" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="38" cy="81" rx="7" ry="4" fill="#1A1040" stroke="#C9A84C" stroke-width="1"/>
+    <ellipse cx="62" cy="81" rx="7" ry="4" fill="#1A1040" stroke="#C9A84C" stroke-width="1"/>
+  </svg></div>`;
+}
+
+// ── App State ──
+let appScreen = 'home';
+let appMenu = null;
+let fortunePhase = 'intro';
+let fortuneCards = [];
+let fortuneFlipped = [];
+let fortuneResult = null;
+let shuffleStep = 0;
+let shuffleInterval = null;
+
+const introMsgs = {
+  one: "今のあなたに一番大切なメッセージを\n1枚のカードに映し出すニャ。",
+  three: "過去・現在・未来\n3枚のカードがあなたの物語を語るニャ。",
+  decision: "2つの道を示すニャ！\n心に響いた方を選ぶニャ！",
+  release: "今のあなたに必要な\n手放すものと引き寄せるものを示すニャ。",
+  celtic: "10枚のカードで\nあなたの状況を深く読み解くニャ。\nゆっくり丁寧に向き合うニャ。",
+  omikuji: "今日の運勢を\n猫が占ってあげるニャ！",
+  lucky: "今日のラッキー猫を\nお知らせするニャ！",
+  quote: "トラさんから\n今日だけの秘密のメッセージを伝えるニャ。",
+};
+
+const CELTIC_LABELS = [
+  "① 現状・テーマ",
+  "② 障害・課題",
+  "③ 土台・無意識",
+  "④ 過去の影響",
+  "⑤ 可能性・目標",
+  "⑥ 近い未来",
+  "⑦ あなた自身",
+  "⑧ 周囲の影響",
+  "⑨ 希望と恐れ",
+  "⑩ 最終結果",
+];
+
+const OMIKUJI_LIST = [
+  { fortune: "大吉", color: "#FFD700", msg: "最高の運気だニャ！思い切って行動するのが吉ニャ！", detail: "恋愛◎ 仕事◎ 健康◎ 金運◎", cat: "三毛猫があなたを守っているニャ！" },
+  { fortune: "中吉", color: "#C9A84C", msg: "良い流れが来てるニャ。自信を持って進むニャ！", detail: "恋愛○ 仕事○ 健康○ 金運○", cat: "白猫が幸運を運んでくるニャ！" },
+  { fortune: "小吉", color: "#90EE90", msg: "小さな幸せがたくさんある日ニャ。丁寧に過ごすニャ。", detail: "恋愛○ 仕事△ 健康○ 金運△", cat: "ハチワレ猫が見守っているニャ。" },
+  { fortune: "吉", color: "#87CEEB", msg: "穏やかな一日になりそうだニャ。感謝を忘れずニャ。", detail: "恋愛△ 仕事○ 健康◎ 金運△", cat: "キジトラ猫が癒してくれるニャ。" },
+  { fortune: "末吉", color: "#DDA0DD", msg: "今日はおとなしく過ごすのが吉ニャ。焦りは禁物ニャ。", detail: "恋愛△ 仕事△ 健康○ 金運△", cat: "グレー猫がそっと寄り添うニャ。" },
+  { fortune: "凶", color: "#FF8C94", msg: "ちょっと注意が必要な日ニャ。でも猫パンチで乗り越えるニャ！", detail: "恋愛▲ 仕事▲ 健康△ 金運▲", cat: "黒猫が魔除けしてくれてるニャ！" },
+];
+
+function getLabel(menuId, i) {
+  if (menuId === 'three') return ["🕰️ 過去","🌱 現在","🚀 未来"][i];
+  if (menuId === 'decision') return ["選択肢 A","選択肢 B"][i];
+  if (menuId === 'release') return ["🍃 手放すもの","🌟 引き寄せるもの"][i];
+  if (menuId === 'celtic') return CELTIC_LABELS[i];
+  return null;
+}
+
+// ── Render ──
+function render() {
+  const root = document.getElementById('root');
+  if (appScreen === 'home') {
+    root.innerHTML = renderHome();
+  } else {
+    root.innerHTML = renderFortune();
+  }
+  attachEvents();
+}
+
+function renderHome() {
+  const menuItems = MENUS.map((menu, i) => `
+    <button class="menu-btn" data-menu="${menu.id}" style="animation: fadeInUp 0.4s ease-out ${i * 0.06}s both">
+      <div class="menu-icon-wrap">${menu.icon}</div>
+      <div>
+        <div class="menu-title">${menu.title}</div>
+        <div class="menu-sub">${menu.sub}</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </button>`).join('');
+
+  return `<div class="screen">
+    <div class="home-header">
+      ${makeCatSVG(96)}
+      <div class="cat-label">✦ MYSTIC CAT ORACLE ✦</div>
+      <h1 class="home-title">ねこタロット</h1>
+      <div class="home-sub">神秘の猫からのメッセージ</div>
+    </div>
+    <div class="menu-list">
+      <div class="menu-divider">── 今日、どんな占いをする？ ──</div>
+      ${menuItems}
+    </div>
+  </div>`;
+}
+
+function renderFortune() {
+  let content = '';
+  if (fortunePhase === 'intro') content = renderIntro();
+  else if (fortunePhase === 'shuffle') content = renderShuffle();
+  else if (fortunePhase === 'flip') content = renderFlip();
+  else if (fortunePhase === 'result') content = renderResult();
+
+  return `<div class="screen">
+    <div class="topbar">
+      <button class="back-btn" id="btn-back">← 戻る</button>
+      <span class="topbar-title">${appMenu.icon} ${appMenu.title}</span>
+    </div>
+    <div class="fortune-content">${content}</div>
+  </div>`;
+}
+
+function renderIntro() {
+  return `<div class="intro-wrap">
+    ${makeCatSVG(84)}
+    <div class="intro-box">
+      <div class="intro-cat-label">🐈 猫からのひとこと</div>
+      <div class="intro-msg">${introMsgs[appMenu.id]}</div>
+    </div>
+    <button class="start-btn" id="btn-start">
+      ${appMenu.cards > 0 ? '✨ カードを引く ✨' : '✨ 占ってもらう ✨'}
+    </button>
+  </div>`;
+}
+
+function renderShuffle() {
+  const cards = [0,1,2].map(i => {
+    const rot = (shuffleStep % 2 === 0 ? 1 : -1) * (i - 1) * 9;
+    const ty = (i - 1) * -6;
+    return `<div class="shuffle-card" style="transform:rotate(${rot}deg) translateY(${ty}px)">🐾</div>`;
+  }).join('');
+  return `<div class="shuffle-wrap">
+    <div class="shuffle-label">✦ カードをシャッフル中 ✦</div>
+    <div class="shuffle-cards">${cards}</div>
+  </div>`;
+}
+
+function makeCardHtml(card, i, small) {
+  const lbl = getLabel(appMenu.id, i);
+  const isFlipped = fortuneFlipped.includes(i);
+  const w = small ? 72 : 105;
+  const h = small ? 118 : 172;
+  const front = card.current.img
+    ? `<img src="${card.current.img}" alt="${card.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      + `<div class="card-front-placeholder" style="display:none"><div class="pla-icon">🃏</div><div class="pla-name">${card.current.display}</div></div>`
+    : `<div class="card-front-placeholder"><div class="pla-icon">🃏</div><div class="pla-name">${card.current.display}</div></div>`;
+  return `<div class="flip-card-wrap">
+    ${lbl && small ? `<div class="celtic-num">${lbl}</div>` : lbl ? `<div class="flip-label">${lbl}</div>` : ''}
+    <div class="card-3d" data-card="${i}" style="width:${w}px;height:${h}px;${isFlipped ? 'cursor:default' : ''}">
+      <div class="card-inner ${isFlipped ? 'flipped' : ''}">
+        <div class="card-face card-back">
+          <div class="card-back-inner"></div>
+          <div class="card-back-paw" style="font-size:${small?22:34}px">🐾</div>
+          <div class="card-back-text">ねこタロット</div>
+        </div>
+        <div class="card-face card-front">${front}</div>
+      </div>
+    </div>
+    ${!isFlipped ? '<div class="flip-hint-tap">タップ ✦</div>' : ''}
+  </div>`;
+}
+
+function makeCelticCard(i, rotate) {
+  const card = fortuneCards[i];
+  const lbl = CELTIC_LABELS[i];
+  const isFlipped = fortuneFlipped.includes(i);
+  const w = rotate ? 86 : 52;
+  const h = rotate ? 52 : 86;
+  const front = card.current.img
+    ? `<img src="${card.current.img}" alt="${card.name}" style="width:100%;height:100%;object-fit:cover;border-radius:6px${rotate ? ';transform:rotate(-90deg);transform-origin:center' : ''}" onerror="this.style.display='none'">`
+    : `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#C9A84C;font-size:8px;text-align:center;padding:2px">${card.current.display}</div>`;
+  return `<div class="celtic-cell">
+    <div class="celtic-num">${lbl.substring(0,2)}</div>
+    <div data-card="${i}" style="width:${w}px;height:${h}px;cursor:${isFlipped?'default':'pointer'};perspective:400px;flex-shrink:0" onclick="handleCelticFlip(${i})">
+      <div style="width:100%;height:100%;transform-style:preserve-3d;position:relative;transition:transform 0.65s cubic-bezier(0.4,0,0.2,1);transform:${isFlipped?'rotateY(180deg)':'rotateY(0deg)'}">
+        <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;border:1.5px solid #C9A84C;background:linear-gradient(135deg,#0D0B2A,#1A1040);display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.8">🐾</div>
+        <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;border:1.5px solid #C9A84C;transform:rotateY(180deg);overflow:hidden;background:#0D0B2A">${front}</div>
+      </div>
+    </div>
+    ${!isFlipped ? '<div style="color:rgba(201,168,76,0.55);font-size:8px;animation:pulse 1.5s ease-in-out infinite">タップ</div>' : ''}
+  </div>`;
+}
+
+function renderFlip() {
+  if (appMenu.id === 'celtic') {
+    // 正式なケルト十字配置
+    // ①現状(0) ②障害(1,横) ③土台(2) ④過去(3) ⑤目標(4) ⑥近未来(5)
+    // ⑦自身(6) ⑧周囲(7) ⑨希望(8) ⑩結果(9) - スタッフ縦列
+    const crossHtml = `
+      <div style="display:flex;gap:8px;justify-content:center;align-items:flex-start">
+        <div style="display:grid;grid-template-columns:60px 96px 60px;grid-template-rows:96px 96px 96px;gap:4px;align-items:center;justify-items:center">
+          <div></div>${makeCelticCard(4, false)}<div></div>
+          ${makeCelticCard(2, false)}
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:96px;height:96px">
+            <div style="position:absolute">${makeCelticCard(0, false)}</div>
+            <div style="position:absolute;opacity:0.85">${makeCelticCard(1, true)}</div>
+          </div>
+          ${makeCelticCard(3, false)}
+          <div></div>${makeCelticCard(5, false)}<div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${makeCelticCard(9, false)}
+          ${makeCelticCard(8, false)}
+          ${makeCelticCard(7, false)}
+          ${makeCelticCard(6, false)}
+        </div>
+      </div>`;
+    return `<div>
+      <div class="flip-hint">①から順番にタップしてめくるニャ 🐾</div>
+      ${crossHtml}
+    </div>`;
+  }
+  const gap = fortuneCards.length > 2 ? 10 : 16;
+  const cardHtml = fortuneCards.map((card, i) => makeCardHtml(card, i, false)).join('');
+  return `<div>
+    <div class="flip-hint">カードをタップしてめくるニャ 🐾</div>
+    <div class="flip-cards-row" style="gap:${gap}px">${cardHtml}</div>
+  </div>`;
+}
+
+function renderResult() {
+  if (!fortuneResult) return '';
+  let html = '';
+
+  if (fortuneResult.type === 'lucky') {
+    const d = fortuneResult.data;
+    const imgUrl = `https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/${d.img}`;
+    html = `<div class="special-result">
+      <div class="special-label">🐈 今日のラッキーキャット</div>
+    </div>
+    <div class="special-box" style="display:flex;flex-direction:column;align-items:center">
+      <img src="${imgUrl}" alt="${d.type}"
+        style="width:160px;height:160px;object-fit:cover;border-radius:50%;border:3px solid rgba(201,168,76,0.6);box-shadow:0 0 24px rgba(201,168,76,0.3);margin-bottom:14px"
+        onerror="this.style.display='none'">
+      <div class="special-type">「${d.type}」${d.emoji}</div>
+      <div class="special-msg">${d.msg}</div>
+    </div>`;
+  } else if (fortuneResult.type === 'quote') {
+    html = `<div class="special-result">
+      <div class="special-emoji" style="font-size:56px">🐅</div>
+      <div class="special-label">トラさんの秘密の格言</div>
+    </div>
+    <div class="special-box quote-box">
+      <div class="quote-mark open">"</div>
+      <div class="quote-text">${fortuneResult.data}</div>
+      <div class="quote-mark close">"</div>
+    </div>`;
+  } else if (fortuneResult.type === 'omikuji') {
+    const d = fortuneResult.data;
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+    html = `<div class="special-result">
+      <div class="special-emoji" style="font-size:56px">🎋</div>
+      <div class="special-label">今日のおみくじ</div>
+      <div style="color:rgba(201,168,76,0.6);font-size:11px;margin-top:4px">${dateStr}</div>
+    </div>
+    <div class="special-box" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <div style="font-size:52px;font-weight:bold;font-family:serif;color:${d.color};text-shadow:0 0 20px ${d.color}66;animation:pulseGlow 2s ease-in-out infinite">${d.fortune}</div>
+      <div style="width:100%;background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;border:1px solid rgba(201,168,76,0.2)">
+        <div style="color:#C9A84C;font-size:11px;margin-bottom:6px;letter-spacing:1px">🌟 運勢</div>
+        <div style="color:#F0EAD6;font-size:13px;line-height:1.7">${d.detail}</div>
+      </div>
+      <div style="color:rgba(240,234,214,0.9);font-size:14px;line-height:1.8;text-align:center">${d.msg}</div>
+      <div style="color:#C9A84C;font-size:12px;font-style:italic">🐱 ${d.cat}</div>
+    </div>`;
+  } else {
+    html = fortuneResult.data.map((card, i) => {
+      const lbl = getLabel(appMenu.id, i) || '🔮 カード';
+      const imgHtml = card.current.img
+        ? `<div class="result-img-wrap"><img class="result-img" src="${card.current.img}" alt="${card.name}" onerror="this.parentElement.style.display='none'"></div>`
+        : '';
+      return `<div class="result-card" style="animation: fadeInUp 0.45s ease-out ${i * 0.12}s both">
+        <div class="result-header"><span style="font-size:16px">🔮</span><span class="result-header-label">${lbl}</span></div>
+        ${imgHtml}
+        <div class="result-card-name">${card.current.display}</div>
+        <div class="result-cat-msg">😺 ${card.current.cat}</div>
+        <div class="result-meaning">📜 ${card.current.msg}</div>
+        ${card.current.pro ? `<div class="result-pro">✨ ${card.current.pro}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  return `<div class="result-wrap">
+    ${html}
+    <div class="action-btns">
+      <button class="btn-retry" id="btn-retry">🔄 もう一度</button>
+      <button class="btn-home" id="btn-home-from-result">🏠 ホームへ</button>
+    </div>
+  </div>`;
+}
+
+// ── Events ──
+function attachEvents() {
+  document.querySelectorAll('.menu-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.menu;
+      appMenu = MENUS.find(m => m.id === id);
+      appScreen = 'fortune';
+      fortunePhase = 'intro';
+      fortuneCards = [];
+      fortuneFlipped = [];
+      fortuneResult = null;
+      render();
+    });
+  });
+
+  const backBtn = document.getElementById('btn-back');
+  if (backBtn) backBtn.addEventListener('click', () => {
+    appScreen = 'home';
+    if (shuffleInterval) { clearInterval(shuffleInterval); shuffleInterval = null; }
+    render();
+  });
+
+  const startBtn = document.getElementById('btn-start');
+  if (startBtn) startBtn.addEventListener('click', handleStart);
+
+  document.querySelectorAll('.card-3d').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.card);
+      if (!fortuneFlipped.includes(i)) {
+        fortuneFlipped = [...fortuneFlipped, i];
+        render();
+        if (fortuneFlipped.length === fortuneCards.length) {
+          setTimeout(() => {
+            fortuneResult = { type: 'cards', data: fortuneCards };
+            fortunePhase = 'result';
+            render();
+          }, 900);
+        }
+      }
+    });
+  });
+
+  const retryBtn = document.getElementById('btn-retry');
+  if (retryBtn) retryBtn.addEventListener('click', () => {
+    fortunePhase = 'intro';
+    fortuneCards = [];
+    fortuneFlipped = [];
+    fortuneResult = null;
+    render();
+  });
+
+  const homeFromResult = document.getElementById('btn-home-from-result');
+  if (homeFromResult) homeFromResult.addEventListener('click', () => {
+    appScreen = 'home';
+    render();
+  });
+}
+
+function handleCelticFlip(i) {
+  if (!fortuneFlipped.includes(i)) {
+    fortuneFlipped = [...fortuneFlipped, i];
+    render();
+    if (fortuneFlipped.length === fortuneCards.length) {
+      setTimeout(() => {
+        fortuneResult = { type: 'cards', data: fortuneCards };
+        fortunePhase = 'result';
+        render();
+      }, 900);
+    }
+  }
+}
+
+function handleStart() {
+  if (appMenu.id === 'lucky') {
+    fortuneResult = { type: 'lucky', data: LUCKY_CATS[Math.floor(Math.random() * LUCKY_CATS.length)] };
+    fortunePhase = 'result';
+    render();
+    return;
+  }
+  if (appMenu.id === 'quote') {
+    fortuneResult = { type: 'quote', data: QUOTES[Math.floor(Math.random() * QUOTES.length)] };
+    fortunePhase = 'result';
+    render();
+    return;
+  }
+  if (appMenu.id === 'omikuji') {
+    // 日付ベースで今日の運勢を決める（同じ日は同じ結果）
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
+    const idx = seed % OMIKUJI_LIST.length;
+    fortuneResult = { type: 'omikuji', data: OMIKUJI_LIST[idx] };
+    fortunePhase = 'result';
+    render();
+    return;
+  }
+  fortuneCards = drawCards(appMenu.cards);
+  fortuneFlipped = [];
+  fortunePhase = 'shuffle';
+  shuffleStep = 0;
+  render();
+  let s = 0;
+  shuffleInterval = setInterval(() => {
+    s++;
+    shuffleStep = s;
+    render();
+    if (s >= 5) {
+      clearInterval(shuffleInterval);
+      shuffleInterval = null;
+      setTimeout(() => { fortunePhase = 'flip'; render(); }, 200);
+    }
+  }, 320);
+}
+
+// ── Start ──
+render();
+</script>
+</body>
+</html>
