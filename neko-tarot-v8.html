@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ねこタロット - 決断のとき</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;600&display=swap');
+  :root {
+    --bg:#1a1025;--card-bg:#2d1f3d;
+    --accent:#e8b4f8;--accent2:#f5d76e;--accent3:#a8e6cf;
+    --text:#f0e6ff;--text-muted:#b09ec0;--border:#5a3d7a;
+    --glow:rgba(232,180,248,0.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Zen Maru Gothic',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(90,40,120,0.4) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(40,20,80,0.5) 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+  .star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:0.2;}50%{opacity:1;transform:scale(1.3);}}
+  .container{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+  header{text-align:center;padding:24px 0 20px;}
+  .cat-emoji{font-size:44px;display:block;margin-bottom:6px;animation:float 4s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  h1{font-family:'Shippori Mincho',serif;font-size:clamp(20px,5vw,30px);color:var(--accent);letter-spacing:0.1em;text-shadow:0 0 20px var(--glow);margin-bottom:4px;}
+  .subtitle{font-size:13px;color:var(--text-muted);letter-spacing:0.15em;}
+
+  /* ステップ */
+  .step{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;}
+  .step-label{font-size:12px;color:var(--accent);letter-spacing:0.15em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .step-num{background:var(--accent);color:var(--bg);width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+
+  textarea,input[type=text]{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Zen Maru Gothic',sans-serif;font-size:14px;padding:11px;outline:none;transition:border-color 0.3s;}
+  textarea{resize:none;height:68px;}
+  textarea:focus,input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 12px var(--glow);}
+  textarea::placeholder,input::placeholder{color:var(--text-muted);}
+
+  /* 選択肢入力 */
+  .choices-input{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .choice-box{display:flex;flex-direction:column;gap:6px;}
+  .choice-box label{font-size:12px;color:var(--accent2);font-weight:700;}
+
+  /* AかBか選択ボタン */
+  .choice-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .choice-btn{padding:14px 8px;border-radius:12px;border:2px solid var(--border);background:transparent;color:var(--text);font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.3s;text-align:center;}
+  .choice-btn:hover{border-color:var(--accent);background:rgba(232,180,248,0.1);}
+  .choice-btn.selected-a{border-color:#a78bfa;background:rgba(139,92,246,0.2);color:#c4b5fd;}
+  .choice-btn.selected-b{border-color:#f59e0b;background:rgba(245,158,11,0.15);color:#fcd34d;}
+  .choice-label{font-size:11px;color:var(--text-muted);margin-top:4px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* カードグリッド */
+  .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .card-slot{aspect-ratio:2/3;background:var(--card-bg);border:2px dashed var(--border);border-radius:12px;cursor:pointer;transition:all 0.3s;overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .card-slot:hover:not(.revealed){border-color:var(--accent);box-shadow:0 0 20px var(--glow);transform:translateY(-3px);}
+  .card-slot.revealed{border:2px solid var(--border);cursor:default;}
+  .card-slot.reversed .card-img{transform:rotate(180deg);}
+  .card-slot.highlight{border-color:var(--accent2);box-shadow:0 0 18px rgba(245,215,110,0.4);}
+  .card-slot.dimmed{opacity:0.45;filter:grayscale(0.5);}
+  .card-back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;text-align:center;}
+  .position-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:14px 6px 6px;font-size:10px;text-align:center;font-weight:700;letter-spacing:0.05em;}
+  .position-number{font-size:9px;color:var(--text-muted);display:block;margin-bottom:2px;}
+  .card-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-name-overlay{position:absolute;top:0;left:0;right:0;background:linear-gradient(rgba(0,0,0,0.75),transparent);padding:6px 5px 14px;font-size:9px;color:rgba(255,255,255,0.9);text-align:center;line-height:1.3;}
+  .reversed-badge{position:absolute;top:5px;right:5px;background:rgba(248,113,113,0.8);color:white;font-size:8px;padding:2px 5px;border-radius:20px;font-weight:700;z-index:2;}
+  @keyframes flipIn{0%{transform:rotateY(90deg) scale(0.8);opacity:0;}100%{transform:rotateY(0) scale(1);opacity:1;}}
+  .just-revealed{animation:flipIn 0.4s ease-out forwards;}
+
+  /* ボタン類 */
+  .btn{width:100%;padding:13px;border-radius:12px;font-family:'Zen Maru Gothic',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.08em;transition:all 0.3s;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-reveal{background:linear-gradient(135deg,#5a3d7a,#3d2060);border:1px solid var(--accent);color:var(--accent);}
+  .btn-reveal:hover:not(:disabled){background:linear-gradient(135deg,#7a4da0,#5a3080);box-shadow:0 0 24px var(--glow);}
+  .btn-ai{background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;color:white;font-size:15px;}
+  .btn-ai:hover:not(:disabled){background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 4px 30px rgba(139,92,246,0.5);transform:translateY(-2px);}
+  .btn:disabled{opacity:0.45;cursor:not-allowed;transform:none !important;}
+  .btn-reset{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:13px;margin-top:4px;}
+  .btn-reset:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* AI結果 */
+  .ai-result{background:var(--card-bg);border:1px solid var(--accent);border-radius:16px;padding:22px;margin-top:4px;box-shadow:0 0 40px var(--glow);display:none;}
+  .ai-result.show{display:block;}
+  .ai-result-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .ai-result-header h3{font-family:'Shippori Mincho',serif;font-size:16px;color:var(--accent);}
+  .ai-reading{font-size:14px;line-height:1.9;color:var(--text);}
+  .card-section{margin-bottom:12px;padding:12px;background:rgba(255,255,255,0.04);border-radius:10px;border-left:3px solid var(--accent2);}
+  .card-section h4{color:var(--accent2);font-size:12px;margin-bottom:6px;}
+  .summary{margin-top:12px;padding:14px;background:rgba(168,230,207,0.08);border-radius:10px;border-left:3px solid var(--accent3);}
+  .summary h4{color:var(--accent3);font-size:12px;margin-bottom:6px;}
+  .verdict{margin-top:12px;padding:14px;background:rgba(139,92,246,0.12);border-radius:10px;border:1px solid rgba(139,92,246,0.4);text-align:center;font-size:15px;font-weight:700;color:#c4b5fd;}
+
+  .loading{text-align:center;padding:28px;color:var(--text-muted);font-size:14px;}
+  .loading-cats{font-size:26px;letter-spacing:8px;animation:bounce 1s ease-in-out infinite;display:block;margin-bottom:10px;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  .error-msg{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.4);border-radius:10px;padding:11px 14px;color:#fca5a5;font-size:13px;margin-top:8px;display:none;}
+  .error-msg.show{display:block;}
+
+  /* 選択済みバナー */
+  .selected-banner{text-align:center;padding:10px;background:rgba(139,92,246,0.15);border-radius:10px;font-size:13px;color:#c4b5fd;margin-bottom:14px;display:none;}
+  .selected-banner.show{display:block;}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="container">
+  <header>
+    <span class="cat-emoji">🔮</span>
+    <h1>ねこタロット</h1>
+    <p class="subtitle">〜 決断のとき 〜</p>
+  </header>
+
+  <!-- STEP 1: 質問 -->
+  <div class="step">
+    <div class="step-label"><span class="step-num">1</span>あなたのご質問を教えてください</div>
+    <textarea id="questionInput" placeholder="例：転職すべきか、今の会社に残るべきか迷っています…"></textarea>
+  </div>
+
+  <!-- STEP 2: 選択肢 -->
+  <div class="step">
+    <div class="step-label"><span class="step-num">2</span>迷っている選択肢を入力してください</div>
+    <div class="choices-input">
+      <div class="choice-box">
+        <label>🟣 選択肢 A</label>
+        <input type="text" id="choiceA" placeholder="例：転職する">
+      </div>
+      <div class="choice-box">
+        <label>🟡 選択肢 B</label>
+        <input type="text" id="choiceB" placeholder="例：今の会社に残る">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: どちらを選ぶ？ -->
+  <div class="step">
+    <div class="step-label"><span class="step-num">3</span>今の気持ちに近い方を選んでください</div>
+    <div class="choice-btns">
+      <button class="choice-btn" id="btnA" onclick="selectChoice('A')">
+        🟣 選択肢 A<br>
+        <span class="choice-label" id="labelA">（未入力）</span>
+      </button>
+      <button class="choice-btn" id="btnB" onclick="selectChoice('B')">
+        🟡 選択肢 B<br>
+        <span class="choice-label" id="labelB">（未入力）</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 選択済みバナー -->
+  <div class="selected-banner" id="selectedBanner"></div>
+
+  <!-- カードグリッド -->
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <button class="btn btn-reveal" id="btnRevealAll" onclick="revealAll()" disabled>🐱 すべてのカードをめくる</button>
+  <button class="btn btn-ai" id="btnAI" onclick="getAIReading()" disabled>✨ ねこ先生に解釈してもらう</button>
+
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="ai-result" id="aiResult">
+    <div class="ai-result-header"><span>🐱</span><h3>ねこ先生のお告げ</h3></div>
+    <div class="ai-reading" id="aiReading"></div>
+  </div>
+
+  <button class="btn btn-reset" onclick="resetAll()">🔄 最初からやり直す</button>
+</div>
+
+<script>
+const CARDS=[
+  {id:0,name:'愚者',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/00_fool.jpg'},
+  {id:1,name:'魔術師',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/01_magician.jpg'},
+  {id:2,name:'女教皇',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/02_high_priestess.jpg'},
+  {id:3,name:'女帝',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/03_empress.jpg'},
+  {id:4,name:'皇帝',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/04_emperor.jpg'},
+  {id:5,name:'教皇',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/05_hierophant.jpg'},
+  {id:6,name:'恋人',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/06_lovers.jpg'},
+  {id:7,name:'戦車',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/07_chariot.jpg'},
+  {id:8,name:'力',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/08_strength.jpg'},
+  {id:9,name:'隠者',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/09_hermit.jpg'},
+  {id:10,name:'運命の輪',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/10_wheel.jpg'},
+  {id:11,name:'正義',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/11_justice.jpg'},
+  {id:12,name:'吊るされた男',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/12_hanged.jpg'},
+  {id:13,name:'死神',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/13_death.jpg'},
+  {id:14,name:'節制',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/14_temperance.jpg'},
+  {id:15,name:'悪魔',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/15_devil.jpg'},
+  {id:16,name:'塔',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/16_tower.jpg'},
+  {id:17,name:'星',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/17_star.jpg'},
+  {id:18,name:'月',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/18_moon.jpg'},
+  {id:19,name:'太陽',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/19_sun.jpg'},
+  {id:20,name:'審判',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/20_judgement.jpg'},
+  {id:21,name:'世界',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/21_world.jpg'},
+  {id:22,name:'ワンドのエース',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands01.jpg'},
+  {id:23,name:'ワンドの2',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands02.jpg'},
+  {id:24,name:'ワンドの3',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands03.jpg'},
+  {id:25,name:'ワンドの4',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands04.jpg'},
+  {id:26,name:'ワンドの5',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands05.jpg'},
+  {id:27,name:'ワンドの6',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands06.jpg'},
+  {id:28,name:'ワンドの7',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands07.jpg'},
+  {id:29,name:'ワンドの8',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands08.jpg'},
+  {id:30,name:'ワンドの9',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands09.jpg'},
+  {id:31,name:'ワンドの10',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands10.jpg'},
+  {id:32,name:'ワンドのペイジ',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands11.jpg'},
+  {id:33,name:'ワンドのナイト',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands12.jpg'},
+  {id:34,name:'ワンドのクイーン',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands13.jpg'},
+  {id:35,name:'ワンドのキング',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/wands14.jpg'},
+  {id:36,name:'カップのエース',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups01.jpg'},
+  {id:37,name:'カップの2',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups02.jpg'},
+  {id:38,name:'カップの3',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups03.jpg'},
+  {id:39,name:'カップの4',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups04.jpg'},
+  {id:40,name:'カップの5',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups05.jpg'},
+  {id:41,name:'カップの6',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups06.jpg'},
+  {id:42,name:'カップの7',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups07.jpg'},
+  {id:43,name:'カップの8',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups08.jpg'},
+  {id:44,name:'カップの9',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups09.jpg'},
+  {id:45,name:'カップの10',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups10.jpg'},
+  {id:46,name:'カップのペイジ',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups11.jpg'},
+  {id:47,name:'カップのナイト',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups12.jpg'},
+  {id:48,name:'カップのクイーン',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups13.jpg'},
+  {id:49,name:'カップのキング',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/cups14.jpg'},
+  {id:50,name:'ソードのエース',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords01.jpg'},
+  {id:51,name:'ソードの2',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords02.jpg'},
+  {id:52,name:'ソードの3',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords03.jpg'},
+  {id:53,name:'ソードの4',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords04.jpg'},
+  {id:54,name:'ソードの5',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords05.jpg'},
+  {id:55,name:'ソードの6',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords06.jpg'},
+  {id:56,name:'ソードの7',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords07.jpg'},
+  {id:57,name:'ソードの8',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords08.jpg'},
+  {id:58,name:'ソードの9',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords09.jpg'},
+  {id:59,name:'ソードの10',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords10.jpg'},
+  {id:60,name:'ソードのペイジ',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords11.jpg'},
+  {id:61,name:'ソードのナイト',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords12.jpg'},
+  {id:62,name:'ソードのクイーン',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords13.jpg'},
+  {id:63,name:'ソードのキング',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/swords14.jpg'},
+  {id:64,name:'ペンタクルのエース',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles01.jpg'},
+  {id:65,name:'ペンタクルの2',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles02.jpg'},
+  {id:66,name:'ペンタクルの3',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles03.jpg'},
+  {id:67,name:'ペンタクルの4',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles04.jpg'},
+  {id:68,name:'ペンタクルの5',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles05.jpg'},
+  {id:69,name:'ペンタクルの6',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles06.jpg'},
+  {id:70,name:'ペンタクルの7',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles07.jpg'},
+  {id:71,name:'ペンタクルの8',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles08.jpg'},
+  {id:72,name:'ペンタクルの9',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles09.jpg'},
+  {id:73,name:'ペンタクルの10',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles10.jpg'},
+  {id:74,name:'ペンタクルのペイジ',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles11.jpg'},
+  {id:75,name:'ペンタクルのナイト',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles12.jpg'},
+  {id:76,name:'ペンタクルのクイーン',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles13.jpg'},
+  {id:77,name:'ペンタクルのキング',img:'https://raw.githubusercontent.com/maemaekaachan-beep/cat-tarot-images/main/pentacles14.jpg'},
+];
+
+// スプレッド定義（選択した方に応じてポジション名が変わる）
+function getPositions(choice, choiceLabel){
+  return [
+    {label:'現在の状況', desc:'あなたが今いる場所', highlight:false},
+    {label:'決断の核心', desc:'何が問われているか', highlight:false},
+    {label:`「${choiceLabel}」を選ぶと`, desc:'この選択の先に待つもの', highlight:true},
+    {label:'手放すもの', desc:'選んだ場合に失うもの', highlight:false},
+    {label:'導き・アドバイス', desc:'星が示す道標', highlight:false},
+  ];
+}
+
+let drawnCards=[];
+let revealedCount=0;
+let selectedChoice=null; // 'A' or 'B'
+
+// 入力監視
+document.getElementById('choiceA').addEventListener('input', updateChoiceLabels);
+document.getElementById('choiceB').addEventListener('input', updateChoiceLabels);
+
+function updateChoiceLabels(){
+  const a=document.getElementById('choiceA').value.trim()||'（未入力）';
+  const b=document.getElementById('choiceB').value.trim()||'（未入力）';
+  document.getElementById('labelA').textContent=a;
+  document.getElementById('labelB').textContent=b;
+}
+
+function selectChoice(choice){
+  selectedChoice=choice;
+  const choiceLabel=choice==='A'
+    ? (document.getElementById('choiceA').value.trim()||'選択肢A')
+    : (document.getElementById('choiceB').value.trim()||'選択肢B');
+
+  document.getElementById('btnA').className='choice-btn'+(choice==='A'?' selected-a':'');
+  document.getElementById('btnB').className='choice-btn'+(choice==='B'?' selected-b':'');
+
+  const banner=document.getElementById('selectedBanner');
+  banner.textContent=`${choice==='A'?'🟣':'🟡'} 「${choiceLabel}」を選んだ場合を占います`;
+  banner.classList.add('show');
+
+  // カードを引いてグリッド表示
+  drawCards();
+  renderGrid(choice, choiceLabel);
+  document.getElementById('btnRevealAll').disabled=false;
+  document.getElementById('btnAI').disabled=true;
+  document.getElementById('aiResult').classList.remove('show');
+}
+
+function drawCards(){
+  const shuffled=[...CARDS].sort(()=>Math.random()-0.5);
+  drawnCards=shuffled.slice(0,5).map(card=>({...card,reversed:Math.random()<0.3}));
+}
+
+function renderGrid(choice, choiceLabel){
+  const positions=getPositions(choice, choiceLabel||'選択肢');
+  const grid=document.getElementById('cardsGrid');
+  grid.innerHTML='';
+  positions.forEach((pos,i)=>{
+    const slot=document.createElement('div');
+    slot.className='card-slot';
+    slot.id=`slot-${i}`;
+    slot.onclick=()=>revealCard(i,positions);
+    const labelColor=pos.highlight?'var(--accent2)':'var(--accent)';
+    slot.innerHTML=`
+      <div class="card-back">
+        <div style="font-size:24px">${pos.highlight?'⭐':'🌙'}</div>
+        <div style="font-size:10px;color:var(--text-muted);text-align:center;line-height:1.5;margin-top:4px">
+          <strong style="color:${labelColor};font-size:11px">${pos.label}</strong><br>
+          <span>${pos.desc}</span>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:6px">タップしてめくる</div>
+      </div>
+    `;
+    grid.appendChild(slot);
+  });
+  revealedCount=0;
+}
+
+function revealCard(index, positions){
+  const slot=document.getElementById(`slot-${index}`);
+  if(slot.classList.contains('revealed'))return;
+  const card=drawnCards[index];
+  const pos=positions[index];
+
+  slot.classList.add('revealed','just-revealed');
+  if(card.reversed)slot.classList.add('reversed');
+  if(pos.highlight)slot.classList.add('highlight');
+  setTimeout(()=>slot.classList.remove('just-revealed'),500);
+
+  const labelColor=pos.highlight?'var(--accent2)':'var(--accent)';
+  slot.innerHTML=`
+    ${card.reversed?'<div class="reversed-badge">逆位置</div>':''}
+    <div class="card-name-overlay">${card.name}${card.reversed?'（逆）':''}</div>
+    <img class="card-img" src="${card.img}" alt="${card.name}"
+      onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:26px;flex-direction:column;gap:6px\\'><span>🐱</span><span style=\\'font-size:9px;color:var(--accent2);text-align:center;padding:0 6px\\'>${card.name}</span></div>')">
+    <div class="position-label" style="color:${labelColor}">
+      <span class="position-number">Position ${index+1}</span>
+      ${pos.label}
+    </div>
+  `;
+
+  revealedCount++;
+  if(revealedCount===5){
+    document.getElementById('btnAI').disabled=false;
+    document.getElementById('btnRevealAll').disabled=true;
+  }
+}
+
+function revealAll(){
+  if(!selectedChoice)return;
+  const choiceLabel=selectedChoice==='A'
+    ?(document.getElementById('choiceA').value.trim()||'選択肢A')
+    :(document.getElementById('choiceB').value.trim()||'選択肢B');
+  const positions=getPositions(selectedChoice,choiceLabel);
+  for(let i=0;i<5;i++) setTimeout(()=>revealCard(i,positions),i*200);
+  document.getElementById('btnRevealAll').disabled=true;
+}
+
+async function getAIReading(){
+  const question=document.getElementById('questionInput').value.trim();
+  const choiceAText=document.getElementById('choiceA').value.trim()||'選択肢A';
+  const choiceBText=document.getElementById('choiceB').value.trim()||'選択肢B';
+  const chosenLabel=selectedChoice==='A'?choiceAText:choiceBText;
+  const notChosenLabel=selectedChoice==='A'?choiceBText:choiceAText;
+  const positions=getPositions(selectedChoice,chosenLabel);
+
+  const btnAI=document.getElementById('btnAI');
+  const aiResult=document.getElementById('aiResult');
+  const aiReading=document.getElementById('aiReading');
+  const errorMsg=document.getElementById('errorMsg');
+
+  errorMsg.classList.remove('show');
+  btnAI.disabled=true;
+  aiResult.classList.add('show');
+  aiReading.innerHTML=`<div class="loading"><span class="loading-cats">🐱 🔮 🌙</span>ねこ先生が星を読んでいるにゃ…</div>`;
+
+  const cardInfo=drawnCards.map((card,i)=>
+    `・${positions[i].label}：【${card.name}${card.reversed?'（逆位置）':''}】`
+  ).join('\n');
+
+  const prompt=`あなたはねこタロット占い師の「ねこ先生」です。
+わかりやすく具体的で、時々ねこっぽい表現（「〜にゃ」など）を自然に使います。
+温かく、でも的確なアドバイスをしてください。
+
+【ご質問】
+${question||'（質問なし）'}
+
+【選んだ選択肢】「${chosenLabel}」（もう一方は「${notChosenLabel}」）
+
+【引いたカード】
+${cardInfo}
+
+以下の形式で解釈してください：
+
+---カード別の解釈---
+各カード（5枚）について「ポジション名：カード名」を見出しにして、2〜3文で具体的に解釈。逆位置はその意味も加味。
+特に「${chosenLabel}を選ぶと」のカードは重点的に解釈してください。
+
+---ねこ先生の結論---
+「${chosenLabel}」を選んだ場合の総合的な見通しを3〜4文でまとめ、最後に「ねこ先生からひとこと」として一言添えてください。`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'';
+    if(!text)throw new Error('解釈を取得できませんでした');
+
+    const parts=text.split('---ねこ先生の結論---');
+    const cardPart=parts[0].replace('---カード別の解釈---','').trim();
+    const summaryPart=parts[1]?.trim()||'';
+
+    const lines=cardPart.split('\n');
+    let cards=[];let current=null;
+    lines.forEach(line=>{
+      const l=line.trim();
+      if(!l)return;
+      const isHead=(l.startsWith('・')||l.match(/^[①②③④⑤]|^\d\./)||positions.some(p=>l.includes(p.label)))&&l.length<60;
+      if(isHead){
+        if(current)cards.push(current);
+        current={head:l.replace(/^[・①②③④⑤\d\.\s]+/,'').trim(),body:[]};
+      } else if(current){
+        current.body.push(l);
+      }
+    });
+    if(current)cards.push(current);
+
+    let cardHTML=cards.length>0
+      ?cards.map(c=>`<div class="card-section"><h4>${c.head}</h4><p>${c.body.join('<br>')}</p></div>`).join('')
+      :`<div class="card-section"><p>${cardPart.replace(/\n/g,'<br>')}</p></div>`;
+
+    aiReading.innerHTML=cardHTML+(summaryPart?
+      `<div class="summary"><h4>🐱 ねこ先生の結論</h4><p>${summaryPart.replace(/\n/g,'<br>')}</p></div>`:'');
+
+  }catch(err){
+    aiResult.classList.remove('show');
+    errorMsg.textContent=`エラーが発生しましたにゃ…: ${err.message}`;
+    errorMsg.classList.add('show');
+    btnAI.disabled=false;
+  }
+  btnAI.disabled=false;
+}
+
+function resetAll(){
+  selectedChoice=null;
+  document.getElementById('questionInput').value='';
+  document.getElementById('choiceA').value='';
+  document.getElementById('choiceB').value='';
+  document.getElementById('labelA').textContent='（未入力）';
+  document.getElementById('labelB').textContent='（未入力）';
+  document.getElementById('btnA').className='choice-btn';
+  document.getElementById('btnB').className='choice-btn';
+  document.getElementById('selectedBanner').classList.remove('show');
+  document.getElementById('cardsGrid').innerHTML='';
+  document.getElementById('aiResult').classList.remove('show');
+  document.getElementById('errorMsg').classList.remove('show');
+  document.getElementById('btnRevealAll').disabled=true;
+  document.getElementById('btnAI').disabled=true;
+}
+
+// 星
+function createStars(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const sz=Math.random()*2.5+0.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*4).toFixed(1)}s;`;
+    c.appendChild(s);
+  }
+}
+createStars();
+</script>
+</body>
+</html>
